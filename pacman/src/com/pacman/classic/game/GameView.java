@@ -114,7 +114,7 @@ public class GameView extends SurfaceView
     private void computeLayout() {
         int w = getWidth();
         int h = getHeight();
-        hudHeight = h * 0.06f;
+        hudHeight = h * 0.10f;   // two-row HUD needs more space
         // D-pad occupies bottom 22% of screen
         float dpadAreaHeight = h * 0.22f;
         float mazeAreaHeight = h - hudHeight - dpadAreaHeight;
@@ -213,15 +213,35 @@ public class GameView extends SurfaceView
     }
 
     private void drawHud(Canvas c) {
-        float y = hudHeight * 0.75f;
-        scorePaint.setTextSize(hudHeight * 0.6f);
+        float rowH   = hudHeight / 2f;
+        float ts     = rowH * 0.72f;   // text size — fits comfortably in one row
+        float row1y  = rowH * 0.82f;   // baseline of first row
+        float row2y  = hudHeight - rowH * 0.18f; // baseline of second row
+        float left   = mazeOffsetX + 4f;
+        float right  = getWidth() - mazeOffsetX - 4f;
+
+        scorePaint.setTextSize(ts);
         scorePaint.setColor(Color.WHITE);
-        c.drawText("SCORE: " + engine.getScore(), mazeOffsetX, y, scorePaint);
-        String best = "BEST: " + engine.getHighScore();
-        float bw = scorePaint.measureText(best);
-        c.drawText(best, getWidth() / 2f - bw / 2f, y, scorePaint);
-        String lvl = "LV" + engine.getLevel();
-        c.drawText(lvl, getWidth() - mazeOffsetX - scorePaint.measureText(lvl), y, scorePaint);
+
+        // Row 1 — SCORE (left)  |  LV (right)
+        c.drawText("SCORE: " + engine.getScore(), left, row1y, scorePaint);
+        String lvl = "LV " + engine.getLevel();
+        c.drawText(lvl, right - scorePaint.measureText(lvl), row1y, scorePaint);
+
+        // Row 2 — BEST (left)  |  lives as icons (right)
+        scorePaint.setColor(0xFFFFD700);
+        c.drawText("BEST: " + engine.getHighScore(), left, row2y, scorePaint);
+        // Life icons: small pac-man glyphs
+        scorePaint.setColor(0xFFFFD700);
+        float iconR = rowH * 0.30f;
+        float iconY = row2y - iconR * 0.6f;
+        float iconX = right - iconR;
+        for (int i = 0; i < engine.getLives(); i++) {
+            RectF oval = new RectF(iconX - iconR, iconY - iconR,
+                                   iconX + iconR, iconY + iconR);
+            c.drawArc(oval, 30f, 300f, true, scorePaint);
+            iconX -= iconR * 2.6f;
+        }
     }
 
     private void drawMaze(Canvas c) {
@@ -394,10 +414,10 @@ public class GameView extends SurfaceView
             default:
                 break;
         }
-        // Lives
-        drawLives(c);
+        // Lives are now drawn inside the HUD (drawHud)
     }
 
+    @SuppressWarnings("unused")
     private void drawLives(Canvas c) {
         float r = tileSize * 0.3f;
         float startX = mazeOffsetX + r;
