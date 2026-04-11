@@ -96,8 +96,7 @@ public abstract class Ghost {
     }
 
     private boolean isInHouse(Maze maze) {
-        return maze.getTile(tileRow, tileCol) == Maze.GHOST_HOUSE ||
-               maze.getTile(tileRow, tileCol) == Maze.GHOST_DOOR;
+        return maze.getTile(tileRow, tileCol) == Maze.GHOST_HOUSE;
     }
 
     private void bounceInHouse(float dt) {
@@ -126,8 +125,8 @@ public abstract class Ghost {
             if (tileRow <= doorRow) {
                 x = doorCol;
                 tileCol = doorCol;
-                y = doorRow;
-                tileRow = doorRow;
+                y = doorRow - 1;
+                tileRow = doorRow - 1;
                 direction = Direction.LEFT;
                 exitingHouse = false;
             }
