@@ -60,6 +60,20 @@ public class GameView extends SurfaceView
 
     public GameView(Context ctx) {
         super(ctx);
+        init(ctx);
+    }
+
+    public GameView(Context ctx, android.util.AttributeSet attrs) {
+        super(ctx, attrs);
+        init(ctx);
+    }
+
+    public GameView(Context ctx, android.util.AttributeSet attrs, int defStyle) {
+        super(ctx, attrs, defStyle);
+        init(ctx);
+    }
+
+    private void init(Context ctx) {
         getHolder().addCallback(this);
         setFocusable(true);
         initPaints();
