@@ -167,37 +167,39 @@ public abstract class Ghost {
     private void navigateTo(float dt, float speed, Maze maze, int targetCol, int targetRow) {
         float moveAmount = speed * dt;
 
-        // Move along current direction
-        float newX = x + direction.dx * moveAmount;
-        float newY = y + direction.dy * moveAmount;
-
-        // Check tunnel wrap
+        // Tunnel wrap
         if (tileRow == Maze.TUNNEL_ROW) {
-            if (newX < 0) { x = Maze.COLS - 1; tileCol = Math.round(x); return; }
-            if (newX >= Maze.COLS) { x = 0; tileCol = Math.round(x); return; }
+            float nx = x + direction.dx * moveAmount;
+            if (nx < 0)          { x = Maze.COLS - 1; tileCol = Maze.COLS - 1; return; }
+            if (nx >= Maze.COLS) { x = 0;              tileCol = 0;             return; }
         }
 
-        // When we reach the center of a tile, choose next direction
-        if (isAligned()) {
-            tileCol = Math.round(x);
-            tileRow = Math.round(y);
-            x = tileCol;
-            y = tileRow;
-
-            Direction bestDir = chooseBestDirection(maze, targetCol, targetRow);
-            direction = bestDir;
+        // At tile center: pick next direction
+        if (atCenter()) {
+            Direction best = chooseBestDirection(maze, targetCol, targetRow);
+            direction = best;
         }
-
-        newX = x + direction.dx * moveAmount;
-        newY = y + direction.dy * moveAmount;
 
         int nextCol = tileCol + direction.dx;
         int nextRow = tileRow + direction.dy;
 
-        if (maze.isWalkableForGhost(nextRow, nextCol)) {
-            x = newX;
-            y = newY;
+        if (!maze.isWalkableForGhost(nextRow, nextCol)) {
+            return; // blocked — wait for next direction decision
         }
+
+        // Move
+        x += direction.dx * moveAmount;
+        y += direction.dy * moveAmount;
+
+        // Snap when crossing (or reaching) next tile center
+        if      (direction.dx < 0 && x <= nextCol) { x = nextCol; tileCol = nextCol; }
+        else if (direction.dx > 0 && x >= nextCol) { x = nextCol; tileCol = nextCol; }
+        if      (direction.dy < 0 && y <= nextRow) { y = nextRow; tileRow = nextRow; }
+        else if (direction.dy > 0 && y >= nextRow) { y = nextRow; tileRow = nextRow; }
+    }
+
+    private boolean atCenter() {
+        return Math.abs(x - tileCol) < 0.01f && Math.abs(y - tileRow) < 0.01f;
     }
 
     private Direction chooseBestDirection(Maze maze, int targetCol, int targetRow) {
@@ -249,12 +251,6 @@ public abstract class Ghost {
         float dc = c1 - c2;
         float dr = r1 - r2;
         return dc * dc + dr * dr;
-    }
-
-    private boolean isAligned() {
-        float fx = Math.abs(x - Math.round(x));
-        float fy = Math.abs(y - Math.round(y));
-        return fx < 0.15f && fy < 0.15f;
     }
 
     private float currentSpeed() {

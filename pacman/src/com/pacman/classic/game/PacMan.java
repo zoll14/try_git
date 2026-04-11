@@ -46,64 +46,53 @@ public class PacMan {
 
         // Animate mouth
         mouthAngle += mouthDelta * 180f * dt;
-        if (mouthAngle <= 0f) {
-            mouthAngle = 0f;
-            mouthDelta = 2f;
-        } else if (mouthAngle >= MAX_MOUTH_ANGLE) {
-            mouthAngle = MAX_MOUTH_ANGLE;
-            mouthDelta = -2f;
-        }
+        if (mouthAngle <= 0f)             { mouthAngle = 0f;             mouthDelta =  2f; }
+        else if (mouthAngle >= MAX_MOUTH_ANGLE) { mouthAngle = MAX_MOUTH_ANGLE; mouthDelta = -2f; }
 
-        // Try to change direction if requested
-        if (requestedDirection != direction && requestedDirection != Direction.NONE) {
-            int nextCol = tileCol + requestedDirection.dx;
-            int nextRow = tileRow + requestedDirection.dy;
-            if (isAligned() && maze.isWalkableForPacman(nextRow, nextCol)) {
+        // At tile center: honour queued direction change
+        if (atCenter() && requestedDirection != Direction.NONE) {
+            int nc = tileCol + requestedDirection.dx;
+            int nr = tileRow + requestedDirection.dy;
+            if (maze.isWalkableForPacman(nr, nc)) {
                 direction = requestedDirection;
             }
         }
 
         if (direction == Direction.NONE) return;
 
-        float moveAmount = SPEED * dt;
-        float newX = x + direction.dx * moveAmount;
-        float newY = y + direction.dy * moveAmount;
+        int nextCol = tileCol + direction.dx;
+        int nextRow = tileRow + direction.dy;
 
-        // Check tunnel wrap
-        int wrapCol = maze.tunnelWrap(tileRow, Math.round(newX));
-        if (wrapCol >= 0) {
-            x = wrapCol;
-            tileCol = wrapCol;
-            y = newY;
-            tileRow = Math.round(newY);
+        // Blocked at tile center — stop
+        if (atCenter() && !maze.isWalkableForPacman(nextRow, nextCol)) {
             return;
         }
 
-        int nextTileCol = tileCol + direction.dx;
-        int nextTileRow = tileRow + direction.dy;
+        float moveAmount = SPEED * dt;
 
-        if (maze.isWalkableForPacman(nextTileRow, nextTileCol)) {
-            x = newX;
-            y = newY;
-            // Snap to tile center when aligned
-            if (isAligned()) {
-                tileCol = Math.round(x);
-                tileRow = Math.round(y);
-                x = tileCol;
-                y = tileRow;
-            }
-        } else {
-            // Can't move: snap to center
-            x = tileCol;
-            y = tileRow;
+        // Tunnel wrap
+        int wrapCol = maze.tunnelWrap(tileRow, (int)(x + direction.dx * moveAmount));
+        if (wrapCol >= 0) {
+            x = wrapCol; tileCol = wrapCol;
+            y += direction.dy * moveAmount;
+            tileRow = Math.round(y);
+            return;
         }
+
+        // Move
+        x += direction.dx * moveAmount;
+        y += direction.dy * moveAmount;
+
+        // Snap when crossing (or reaching) next tile center
+        if      (direction.dx < 0 && x <= nextCol) { x = nextCol; tileCol = nextCol; }
+        else if (direction.dx > 0 && x >= nextCol) { x = nextCol; tileCol = nextCol; }
+        if      (direction.dy < 0 && y <= nextRow) { y = nextRow; tileRow = nextRow; }
+        else if (direction.dy > 0 && y >= nextRow) { y = nextRow; tileRow = nextRow; }
     }
 
-    /** True when position is close enough to tile center to turn. */
-    private boolean isAligned() {
-        float fx = Math.abs(x - Math.round(x));
-        float fy = Math.abs(y - Math.round(y));
-        return fx < 0.15f && fy < 0.15f;
+    /** True when position is exactly on the tile-center (set by snapping). */
+    private boolean atCenter() {
+        return Math.abs(x - tileCol) < 0.01f && Math.abs(y - tileRow) < 0.01f;
     }
 
     public void setRequestedDirection(Direction dir) {
