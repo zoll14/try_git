@@ -65,16 +65,39 @@
             android:trackTint="@color/ghost_inky" />
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/swipe_or_dpad"
-        android:textColor="@color/ghost_pinky"
-        android:textSize="14sp"
-        android:fontFamily="monospace"
-        android:gravity="center"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="32dp" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/controls"
+            android:textColor="@color/score_white"
+            android:textSize="20sp"
+            android:fontFamily="monospace" />
+
+        <TextView
+            android:id="@+id/txt_controls_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ghost_pinky"
+            android:textSize="16sp"
+            android:fontFamily="monospace"
+            android:layout_marginEnd="8dp" />
+
+        <Switch
+            android:id="@+id/switch_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:thumbTint="@color/pacman_yellow"
+            android:trackTint="@color/ghost_inky" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_back"

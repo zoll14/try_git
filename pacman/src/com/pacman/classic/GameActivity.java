@@ -58,6 +58,7 @@ public class GameActivity extends Activity {
         gameEngine = new GameEngine(null); // listener wired through GameView
         gameView = (GameView) findViewById(R.id.game_view);
         gameEngine = new GameEngine(gameView);
+        gameView.setSwipeMode(settingsManager.isSwipeEnabled());
         gameView.startGame(gameEngine, audioHelper);
 
         // Load saved high score into engine

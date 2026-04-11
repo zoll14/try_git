@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.CompoundButton;
 import com.pacman.classic.game.SettingsManager;
 
@@ -32,6 +33,18 @@ public class SettingsActivity extends Activity {
         switchMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton b, boolean checked) {
                 settingsManager.setMusicEnabled(checked);
+            }
+        });
+
+        final TextView txtControlsLabel = (TextView) findViewById(R.id.txt_controls_label);
+        final Switch switchControls = (Switch) findViewById(R.id.switch_controls);
+        boolean swipeOn = settingsManager.isSwipeEnabled();
+        switchControls.setChecked(swipeOn);
+        txtControlsLabel.setText(swipeOn ? R.string.controls_swipe : R.string.controls_dpad);
+        switchControls.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton b, boolean checked) {
+                settingsManager.setSwipeEnabled(checked);
+                txtControlsLabel.setText(checked ? R.string.controls_swipe : R.string.controls_dpad);
             }
         });
 

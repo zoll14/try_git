@@ -50,6 +50,8 @@ public class GameView extends SurfaceView
     // D-pad touch state
     private boolean dpadUpPressed, dpadDownPressed, dpadLeftPressed, dpadRightPressed;
     private boolean dpadVisible = true;
+    /** true = swipe-only; false = D-Pad (default) */
+    private boolean swipeMode = false;
 
     // ── Score display overlay ─────────────────────────────────────────────────
     private int showScoreVal = 0;
@@ -62,6 +64,12 @@ public class GameView extends SurfaceView
         setFocusable(true);
         initPaints();
         gestureDetector = new GestureDetector(ctx, new SwipeListener());
+    }
+
+    /** Call before startGame() to apply the user's control preference. */
+    public void setSwipeMode(boolean swipe) {
+        this.swipeMode = swipe;
+        this.dpadVisible = !swipe;
     }
 
     // Called by GameActivity after view is created
@@ -470,10 +478,13 @@ public class GameView extends SurfaceView
     // ── Touch / Gesture ───────────────────────────────────────────────────────
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        // Check dpad area first
-        if (handleDpadTouch(ev)) return true;
-        // Swipe gesture
-        gestureDetector.onTouchEvent(ev);
+        if (swipeMode) {
+            // Swipe-only: ignore D-Pad, forward all touches to gesture detector
+            gestureDetector.onTouchEvent(ev);
+        } else {
+            // D-Pad mode: check dpad area first, swipe elsewhere disabled
+            handleDpadTouch(ev);
+        }
         return true;
     }
 

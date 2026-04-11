@@ -21,4 +21,7 @@
     <string name="points">Points</string>
     <string name="clear_scores">Clear Scores</string>
     <string name="swipe_or_dpad">Controls: Swipe or D-Pad</string>
+    <string name="controls">Controls</string>
+    <string name="controls_swipe">Swipe</string>
+    <string name="controls_dpad">D-Pad</string>
 </resources>
