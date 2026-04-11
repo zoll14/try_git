@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="maze_blue">#2121DE</color>
+    <color name="pacman_yellow">#FFD700</color>
+    <color name="dot_white">#FFB8AE</color>
+    <color name="power_pellet">#FFB8AE</color>
+    <color name="ghost_blinky">#FF0000</color>
+    <color name="ghost_pinky">#FFB8FF</color>
+    <color name="ghost_inky">#00FFFF</color>
+    <color name="ghost_clyde">#FFB852</color>
+    <color name="ghost_frightened">#0000FF</color>
+    <color name="ghost_frightened_flash">#FFFFFF</color>
+    <color name="ghost_eyes">#FFFFFF</color>
+    <color name="background_black">#000000</color>
+    <color name="score_white">#FFFFFF</color>
+    <color name="ui_yellow">#FFD700</color>
+    <color name="dpad_bg">#33FFFFFF</color>
+    <color name="dpad_pressed">#88FFFFFF</color>
+</resources>

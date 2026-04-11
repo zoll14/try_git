@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/background_black"
+    android:padding="32dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PAC-MAN"
+        android:textColor="@color/pacman_yellow"
+        android:textSize="52sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CLASSIC"
+        android:textColor="@color/ghost_pinky"
+        android:textSize="20sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="48dp" />
+
+    <Button
+        android:id="@+id/btn_play"
+        android:layout_width="200dp"
+        android:layout_height="56dp"
+        android:text="@string/play"
+        android:textColor="@color/background_black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:background="@color/pacman_yellow"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btn_high_scores"
+        android:layout_width="200dp"
+        android:layout_height="56dp"
+        android:text="@string/high_scores"
+        android:textColor="@color/pacman_yellow"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="@color/background_black"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btn_settings"
+        android:layout_width="200dp"
+        android:layout_height="56dp"
+        android:text="@string/settings"
+        android:textColor="@color/ghost_inky"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="@color/background_black" />
+
+</LinearLayout>
