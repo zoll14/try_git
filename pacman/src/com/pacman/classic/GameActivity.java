@@ -128,6 +128,7 @@ public class GameActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (gameEngine != null) gameEngine.pause();
+        if (audioHelper != null) audioHelper.pauseMusic();
     }
 
     @Override

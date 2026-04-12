@@ -151,6 +151,9 @@ public class GameView extends SurfaceView
         @Override
         public void run() {
             long prev = System.nanoTime();
+            GameEngine.State prevState = null;
+            boolean prevFrightened = false;
+
             while (running) {
                 long now = System.nanoTime();
                 float dt = (now - prev) / 1_000_000_000f;
@@ -164,6 +167,40 @@ public class GameView extends SurfaceView
 
                 // Tick score overlay
                 if (showScoreTimer > 0) showScoreTimer -= dt;
+
+                // ── Music management ──────────────────────────────────────
+                if (engine != null && audio != null) {
+                    GameEngine.State state = engine.getState();
+
+                    // State transitions
+                    if (state != prevState) {
+                        if (state == GameEngine.State.PLAYING) {
+                            audio.startMusic();
+                            audio.resumeMusic();
+                        } else if (state == GameEngine.State.PACMAN_DYING
+                                || state == GameEngine.State.GAME_OVER
+                                || state == GameEngine.State.READY) {
+                            audio.pauseMusic();
+                        }
+                        prevState = state;
+                    }
+
+                    // Frightened mode toggle
+                    if (state == GameEngine.State.PLAYING) {
+                        boolean isFrightened = false;
+                        for (Ghost g : engine.getGhosts()) {
+                            if (g.getMode() == GhostMode.FRIGHTENED) {
+                                isFrightened = true;
+                                break;
+                            }
+                        }
+                        if (isFrightened != prevFrightened) {
+                            audio.setFrightened(isFrightened);
+                            prevFrightened = isFrightened;
+                        }
+                    }
+                }
+                // ─────────────────────────────────────────────────────────
 
                 drawFrame();
 
