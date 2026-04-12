@@ -3,7 +3,7 @@ package com.pacman.classic.game;
 /** Inky (Cyan): Complex targeting using Blinky's position and Pacman's facing direction. */
 public class Inky extends Ghost {
     public Inky() {
-        super(11, 13, 27, 30, 8f);
+        super(11, 13, 27, 29, 8f);
     }
 
     @Override

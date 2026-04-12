@@ -5,7 +5,7 @@ public class Clyde extends Ghost {
     private static final float SCATTER_DISTANCE = 8f * 8f; // squared
 
     public Clyde() {
-        super(15, 13, 0, 30, 12f);
+        super(15, 13, 0, 29, 12f);
     }
 
     @Override

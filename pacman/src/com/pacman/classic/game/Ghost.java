@@ -106,7 +106,7 @@ public abstract class Ghost {
         } else if (y >= homeRow + 0.8f) {
             direction = Direction.UP;
         }
-        tileRow = Math.round(y);
+        tileRow = (int)y;
     }
 
     private void moveToExit(float dt, Maze maze) {
