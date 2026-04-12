@@ -58,6 +58,13 @@ public class GameView extends SurfaceView
     private float showScoreTimer = 0f;
     private float showScoreX, showScoreY;
 
+    // ── Quit dialog ───────────────────────────────────────────────────────────
+    private volatile boolean showQuitOverlay = false;
+    private RectF exitButtonRect;
+    private RectF cancelBtnRect;
+    private RectF quitBtnRect;
+    private Runnable quitAction;
+
     public GameView(Context ctx) {
         super(ctx);
         init(ctx);
@@ -78,6 +85,18 @@ public class GameView extends SurfaceView
         setFocusable(true);
         initPaints();
         gestureDetector = new GestureDetector(ctx, new SwipeListener());
+    }
+
+    /** Called by GameActivity so the confirmed-quit action can finish the Activity. */
+    public void setQuitAction(Runnable action) {
+        this.quitAction = action;
+    }
+
+    /** Show the quit confirmation overlay (also callable from onBackPressed). */
+    public void showQuitDialog() {
+        if (engine != null) engine.pause();
+        if (audio != null) audio.pauseMusic();
+        showQuitOverlay = true;
     }
 
     /** Call before startGame() to apply the user's control preference. */
@@ -129,6 +148,20 @@ public class GameView extends SurfaceView
 
         dpadY = hudHeight + tileSize * Maze.ROWS + (dpadAreaHeight - Math.min(dpadAreaHeight, w * 0.55f)) / 2f;
         dpadSize = Math.min(dpadAreaHeight * 0.9f, w * 0.55f);
+
+        // Exit button: small ✕ in top-right corner of the HUD
+        float exitSz = hudHeight * 0.44f;
+        exitButtonRect = new RectF(w - exitSz - 10f, 6f, w - 10f, 6f + exitSz);
+
+        // Quit overlay dialog button rects (centered on screen)
+        float cx = w / 2f, cy = h / 2f;
+        float boxW = w * 0.72f, boxH = h * 0.30f;
+        float boxT = cy - boxH / 2f;
+        float btnW = boxW * 0.38f, btnH = boxH * 0.25f;
+        float btnY = boxT + boxH * 0.64f;
+        float gap  = boxW * 0.07f;
+        cancelBtnRect = new RectF(cx - gap / 2f - btnW, btnY, cx - gap / 2f,       btnY + btnH);
+        quitBtnRect   = new RectF(cx + gap / 2f,        btnY, cx + gap / 2f + btnW, btnY + btnH);
     }
 
     // ── Game thread ────────────────────────────────────────────────────────────
@@ -278,6 +311,19 @@ public class GameView extends SurfaceView
                                    iconX + iconR, iconY + iconR);
             c.drawArc(oval, 30f, 300f, true, scorePaint);
             iconX -= iconR * 2.6f;
+        }
+
+        // Exit button ✕
+        if (exitButtonRect != null) {
+            Paint eb = new Paint(Paint.ANTI_ALIAS_FLAG);
+            eb.setColor(0x55FF5555);
+            eb.setStyle(Paint.Style.FILL);
+            c.drawRoundRect(exitButtonRect, 6f, 6f, eb);
+            eb.setColor(0xCCFFFFFF);
+            eb.setTextAlign(Paint.Align.CENTER);
+            eb.setTextSize(exitButtonRect.height() * 0.62f);
+            c.drawText("\u2715", exitButtonRect.centerX(),
+                       exitButtonRect.centerY() + exitButtonRect.height() * 0.22f, eb);
         }
     }
 
@@ -435,6 +481,12 @@ public class GameView extends SurfaceView
     private void drawOverlay(Canvas c) {
         if (engine == null) return;
         GameEngine.State st = engine.getState();
+
+        if (showQuitOverlay) {
+            drawQuitOverlay(c);
+            return;
+        }
+
         switch (st) {
             case READY:
                 drawCenterText(c, "READY!", 0xFFFFFF00, tileSize * 1.2f);
@@ -452,6 +504,64 @@ public class GameView extends SurfaceView
                 break;
         }
         // Lives are now drawn inside the HUD (drawHud)
+    }
+
+    private void drawQuitOverlay(Canvas c) {
+        int w = getWidth(), h = getHeight();
+        float cx = w / 2f, cy = h / 2f;
+
+        // Dim the whole screen
+        Paint dim = new Paint();
+        dim.setColor(0xBB000000);
+        c.drawRect(0, 0, w, h, dim);
+
+        // Dialog box
+        float boxW = w * 0.72f, boxH = h * 0.30f;
+        RectF box = new RectF(cx - boxW / 2f, cy - boxH / 2f,
+                              cx + boxW / 2f, cy + boxH / 2f);
+        Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        fill.setColor(0xFF050520);
+        fill.setStyle(Paint.Style.FILL);
+        c.drawRoundRect(box, 18f, 18f, fill);
+        fill.setColor(0xFF2121DE);
+        fill.setStyle(Paint.Style.STROKE);
+        fill.setStrokeWidth(3f);
+        c.drawRoundRect(box, 18f, 18f, fill);
+
+        // Message text
+        Paint tp = new Paint(Paint.ANTI_ALIAS_FLAG);
+        tp.setTypeface(android.graphics.Typeface.create(
+                android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD));
+        tp.setTextAlign(Paint.Align.CENTER);
+        tp.setColor(0xFFFFFF00);
+        tp.setTextSize(boxH * 0.17f);
+        c.drawText("Leave the maze?", cx, box.top + boxH * 0.30f, tp);
+        tp.setColor(0xFFCCCCCC);
+        tp.setTextSize(boxH * 0.12f);
+        tp.setTypeface(android.graphics.Typeface.MONOSPACE);
+        c.drawText("Your progress will be lost.", cx, box.top + boxH * 0.48f, tp);
+
+        // Buttons
+        if (cancelBtnRect != null) drawDialogButton(c, cancelBtnRect, "STAY",  0xFF1A7A3A);
+        if (quitBtnRect   != null) drawDialogButton(c, quitBtnRect,   "QUIT",  0xFF8A1515);
+    }
+
+    private void drawDialogButton(Canvas c, RectF r, String label, int color) {
+        Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bg.setColor(color);
+        bg.setStyle(Paint.Style.FILL);
+        c.drawRoundRect(r, 12f, 12f, bg);
+        bg.setColor(0x88FFFFFF);
+        bg.setStyle(Paint.Style.STROKE);
+        bg.setStrokeWidth(2f);
+        c.drawRoundRect(r, 12f, 12f, bg);
+        Paint tp = new Paint(Paint.ANTI_ALIAS_FLAG);
+        tp.setColor(Color.WHITE);
+        tp.setTextAlign(Paint.Align.CENTER);
+        tp.setTypeface(android.graphics.Typeface.create(
+                android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD));
+        tp.setTextSize(r.height() * 0.42f);
+        c.drawText(label, r.centerX(), r.centerY() + r.height() * 0.16f, tp);
     }
 
     @SuppressWarnings("unused")
@@ -549,6 +659,30 @@ public class GameView extends SurfaceView
     // ── Touch / Gesture ───────────────────────────────────────────────────────
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        float tx = ev.getX(), ty = ev.getY();
+
+        // While quit overlay is visible, only its buttons respond
+        if (showQuitOverlay) {
+            if (ev.getAction() == MotionEvent.ACTION_UP) {
+                if (cancelBtnRect != null && cancelBtnRect.contains(tx, ty)) {
+                    showQuitOverlay = false;
+                    if (engine != null) engine.resume();
+                    // Game loop will restart music when state returns to PLAYING
+                } else if (quitBtnRect != null && quitBtnRect.contains(tx, ty)) {
+                    showQuitOverlay = false;
+                    if (quitAction != null) quitAction.run();
+                }
+            }
+            return true;
+        }
+
+        // Exit button tap (any touch mode)
+        if (ev.getAction() == MotionEvent.ACTION_UP
+                && exitButtonRect != null && exitButtonRect.contains(tx, ty)) {
+            showQuitDialog();
+            return true;
+        }
+
         if (swipeMode) {
             // Swipe-only: ignore D-Pad, forward all touches to gesture detector
             gestureDetector.onTouchEvent(ev);

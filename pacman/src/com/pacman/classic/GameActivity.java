@@ -59,6 +59,9 @@ public class GameActivity extends Activity {
         gameView = (GameView) findViewById(R.id.game_view);
         gameEngine = new GameEngine(gameView);
         gameView.setSwipeMode(settingsManager.isSwipeEnabled());
+        gameView.setQuitAction(new Runnable() {
+            public void run() { finish(); }
+        });
         gameView.startGame(gameEngine, audioHelper);
 
         // Load saved high score into engine
@@ -122,6 +125,11 @@ public class GameActivity extends Activity {
             }
         });
         b.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (gameView != null) gameView.showQuitDialog();
     }
 
     @Override
