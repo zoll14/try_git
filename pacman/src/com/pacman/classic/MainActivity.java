@@ -34,5 +34,12 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             }
         });
+
+        Button btnRules = (Button) findViewById(R.id.btn_rules);
+        btnRules.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RulesActivity.class));
+            }
+        });
     }
 }
