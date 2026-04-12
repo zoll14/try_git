@@ -63,20 +63,19 @@ public class PacMan {
         int nextCol = tileCol + direction.dx;
         int nextRow = tileRow + direction.dy;
 
-        // Blocked at tile center — stop
+        // Blocked at tile center — stop (tunnel exits bypass this check)
         if (atCenter() && !maze.isWalkableForPacman(nextRow, nextCol)) {
-            return;
+            boolean tunnelExit = (tileRow == Maze.TUNNEL_ROW && (nextCol < 0 || nextCol >= Maze.COLS));
+            if (!tunnelExit) return;
         }
 
         float moveAmount = SPEED * dt;
 
-        // Tunnel wrap
-        int wrapCol = maze.tunnelWrap(tileRow, (int)(x + direction.dx * moveAmount));
-        if (wrapCol >= 0) {
-            x = wrapCol; tileCol = wrapCol;
-            y += direction.dy * moveAmount;
-            tileRow = Math.round(y);
-            return;
+        // Tunnel wrap — must use float, not int cast ((int)(-0.1f)==0 in Java, not -1)
+        if (tileRow == Maze.TUNNEL_ROW) {
+            float nx = x + direction.dx * moveAmount;
+            if (nx < 0)          { x = Maze.COLS - 1; tileCol = Maze.COLS - 1; return; }
+            if (nx >= Maze.COLS) { x = 0;              tileCol = 0;             return; }
         }
 
         // Move
