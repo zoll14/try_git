@@ -153,15 +153,18 @@ public class GameView extends SurfaceView
         float exitSz = hudHeight * 0.44f;
         exitButtonRect = new RectF(w - exitSz - 10f, 6f, w - 10f, 6f + exitSz);
 
-        // Quit overlay dialog button rects (centered on screen)
-        float cx = w / 2f, cy = h / 2f;
-        float boxW = w * 0.72f, boxH = h * 0.30f;
-        float boxT = cy - boxH / 2f;
-        float btnW = boxW * 0.38f, btnH = boxH * 0.25f;
-        float btnY = boxT + boxH * 0.64f;
-        float gap  = boxW * 0.07f;
-        cancelBtnRect = new RectF(cx - gap / 2f - btnW, btnY, cx - gap / 2f,       btnY + btnH);
-        quitBtnRect   = new RectF(cx + gap / 2f,        btnY, cx + gap / 2f + btnW, btnY + btnH);
+        // Quit overlay dialog: center on the game area (HUD + maze), not full screen
+        float gameBottom = mazeOffsetY + tileSize * Maze.ROWS;
+        float gameCy = gameBottom / 2f;   // vertical centre of the visible game content
+        float cx = w / 2f;
+        float boxW = w * 0.88f;           // wide enough so text never overflows
+        float boxH = gameBottom * 0.42f;  // proportional to game-area height
+        float boxT = gameCy - boxH / 2f;
+        float btnW = boxW * 0.38f, btnH = boxH * 0.22f;
+        float btnY = boxT + boxH * 0.70f;
+        float gap  = boxW * 0.06f;
+        cancelBtnRect = new RectF(cx - gap / 2f - btnW, btnY, cx - gap / 2f,        btnY + btnH);
+        quitBtnRect   = new RectF(cx + gap / 2f,         btnY, cx + gap / 2f + btnW, btnY + btnH);
     }
 
     // ── Game thread ────────────────────────────────────────────────────────────
@@ -508,17 +511,20 @@ public class GameView extends SurfaceView
 
     private void drawQuitOverlay(Canvas c) {
         int w = getWidth(), h = getHeight();
-        float cx = w / 2f, cy = h / 2f;
+        // Centre on the game area (HUD + maze), matching computeLayout()
+        float gameBottom = mazeOffsetY + tileSize * Maze.ROWS;
+        float gameCy = gameBottom / 2f;
+        float cx = w / 2f;
 
         // Dim the whole screen
         Paint dim = new Paint();
         dim.setColor(0xBB000000);
         c.drawRect(0, 0, w, h, dim);
 
-        // Dialog box
-        float boxW = w * 0.72f, boxH = h * 0.30f;
-        RectF box = new RectF(cx - boxW / 2f, cy - boxH / 2f,
-                              cx + boxW / 2f, cy + boxH / 2f);
+        // Dialog box — same geometry as computeLayout()
+        float boxW = w * 0.88f, boxH = gameBottom * 0.42f;
+        RectF box = new RectF(cx - boxW / 2f, gameCy - boxH / 2f,
+                              cx + boxW / 2f, gameCy + boxH / 2f);
         Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
         fill.setColor(0xFF050520);
         fill.setStyle(Paint.Style.FILL);
@@ -528,18 +534,26 @@ public class GameView extends SurfaceView
         fill.setStrokeWidth(3f);
         c.drawRoundRect(box, 18f, 18f, fill);
 
-        // Message text
+        // Message text — auto-scale so strings never exceed 90% of box width
         Paint tp = new Paint(Paint.ANTI_ALIAS_FLAG);
         tp.setTypeface(android.graphics.Typeface.create(
                 android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD));
         tp.setTextAlign(Paint.Align.CENTER);
         tp.setColor(0xFFFFFF00);
-        tp.setTextSize(boxH * 0.17f);
-        c.drawText("Leave the maze?", cx, box.top + boxH * 0.30f, tp);
+        float maxTextW = boxW * 0.90f;
+        float titleSize = boxH * 0.14f;
+        tp.setTextSize(titleSize);
+        float titleW = tp.measureText("Leave the maze?");
+        if (titleW > maxTextW) tp.setTextSize(titleSize * maxTextW / titleW);
+        c.drawText("Leave the maze?", cx, box.top + boxH * 0.32f, tp);
+
         tp.setColor(0xFFCCCCCC);
-        tp.setTextSize(boxH * 0.12f);
         tp.setTypeface(android.graphics.Typeface.MONOSPACE);
-        c.drawText("Your progress will be lost.", cx, box.top + boxH * 0.48f, tp);
+        float subSize = boxH * 0.09f;
+        tp.setTextSize(subSize);
+        float subW = tp.measureText("Your progress will be lost.");
+        if (subW > maxTextW) tp.setTextSize(subSize * maxTextW / subW);
+        c.drawText("Your progress will be lost.", cx, box.top + boxH * 0.50f, tp);
 
         // Buttons
         if (cancelBtnRect != null) drawDialogButton(c, cancelBtnRect, "STAY",  0xFF1A7A3A);
