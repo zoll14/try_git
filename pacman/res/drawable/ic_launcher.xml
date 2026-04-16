@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#FFD700" />
-    <size android:width="48dp" android:height="48dp" />
-</shape>
+<!--
+    Pac-Man icon: yellow pie facing right (~45° mouth opening) + black eye.
+    viewportWidth/Height = 48, body radius = 22, centre (24,24).
+    Upper lip at (43,13), lower lip at (43,35)  →  large-arc CCW.
+    Eye: small black circle at (31,14) r=2.5.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Black background circle so the mouth cutout shows dark -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M2,24 A22,22,0,1,0,46,24 A22,22,0,1,0,2,24 Z"/>
+
+    <!-- Yellow Pac-Man body (pie with mouth facing right) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M24,24 L43,13 A22,22,0,1,0,43,35 Z"/>
+
+    <!-- Black eye -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M31,11.5 A2.5,2.5,0,1,0,31,16.5 A2.5,2.5,0,1,0,31,11.5 Z"/>
+
+</vector>
