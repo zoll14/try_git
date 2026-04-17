@@ -276,6 +276,7 @@ public class GameView extends SurfaceView
                 canvas.drawColor(Color.BLACK);
                 drawHud(canvas);
                 drawMaze(canvas);
+                drawPowerUpBadges(canvas);
                 drawGhosts(canvas);
                 drawPacman(canvas);
                 drawDpad(canvas);
@@ -298,10 +299,13 @@ public class GameView extends SurfaceView
         scorePaint.setTextSize(ts);
         scorePaint.setColor(Color.WHITE);
 
-        // Row 1 — SCORE (left)  |  LV (right)
+        // Row 1 — SCORE (left)  |  LV (right, clear of exit button)
         c.drawText("SCORE: " + engine.getScore(), left, row1y, scorePaint);
         String lvl = "LV " + engine.getLevel();
-        c.drawText(lvl, right - scorePaint.measureText(lvl), row1y, scorePaint);
+        float lvlRight = (exitButtonRect != null)
+                ? exitButtonRect.left - tileSize * 0.3f
+                : right;
+        c.drawText(lvl, lvlRight - scorePaint.measureText(lvl), row1y, scorePaint);
 
         // Row 2 — BEST (left)  |  lives as icons (right)
         scorePaint.setColor(0xFFFFD700);
@@ -318,27 +322,7 @@ public class GameView extends SurfaceView
             iconX -= iconR * 2.6f;
         }
 
-        // Power-up indicators (small coloured pills left of exit button)
-        if (engine != null) {
-            PacMan pac = engine.getPacman();
-            Paint pip = new Paint(Paint.ANTI_ALIAS_FLAG);
-            pip.setTextAlign(Paint.Align.RIGHT);
-            pip.setTypeface(android.graphics.Typeface.MONOSPACE);
-            float pipSize = rowH * 0.55f;
-            pip.setTextSize(pipSize);
-            float pipX = (exitButtonRect != null ? exitButtonRect.left : getWidth()) - 8f;
-            float pipY = hudHeight * 0.5f + pipSize * 0.38f;
-            if (pac.getSpeedBoostTimer() > 0f) {
-                pip.setColor(0xFF00CCFF);
-                String boostLabel = "\u26A1" + (int) Math.ceil(pac.getSpeedBoostTimer()) + "s";
-                c.drawText(boostLabel, pipX, pipY, pip);
-                pipX -= pip.measureText(boostLabel) + 6f;
-            }
-            if (pac.isShielded()) {
-                pip.setColor(0xFF00EE88);
-                c.drawText("\u25A0SLD", pipX, pipY, pip);
-            }
-        }
+
 
         // Exit button ✕
         if (exitButtonRect != null) {
@@ -645,6 +629,57 @@ public class GameView extends SurfaceView
             pacmanPaint.setStyle(Paint.Style.FILL);
             c.drawArc(oval, 30f, 300f, true, pacmanPaint);
         }
+    }
+
+    /**
+     * Draws power-up status badges centred on the top wall row of the maze.
+     * The entire top row is solid wall so no gameplay content is obscured.
+     */
+    private void drawPowerUpBadges(Canvas c) {
+        if (engine == null) return;
+        PacMan p = engine.getPacman();
+        boolean hasBoost  = p.getSpeedBoostTimer() > 0f;
+        boolean hasShield = p.isShielded();
+        if (!hasBoost && !hasShield) return;
+
+        float bh  = tileSize * 1.10f;                // badge height
+        float bw  = tileSize * 3.6f;                 // badge width
+        float gap = tileSize * 0.35f;
+        float cx  = mazeOffsetX + Maze.COLS * tileSize / 2f;
+        int   cnt = (hasBoost ? 1 : 0) + (hasShield ? 1 : 0);
+        float totalW = cnt * bw + (cnt - 1) * gap;
+        float bx  = cx - totalW / 2f;
+        // Vertically centred on row 0 (mazeOffsetY + 0.5 tile)
+        float by  = mazeOffsetY + (tileSize - bh) / 2f;
+
+        if (hasBoost) {
+            String lbl = "\u26A1 " + (int) Math.ceil(p.getSpeedBoostTimer()) + "s";
+            drawPowerBadge(c, bx, by, bw, bh, lbl, 0xEE002244, 0xFF00CCFF);
+            bx += bw + gap;
+        }
+        if (hasShield) {
+            drawPowerBadge(c, bx, by, bw, bh, "\u25A0 SHIELD", 0xEE002200, 0xFF00EE88);
+        }
+    }
+
+    private void drawPowerBadge(Canvas c, float x, float y, float w, float h,
+                                String label, int bgColor, int borderColor) {
+        RectF r = new RectF(x, y, x + w, y + h);
+        Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bg.setColor(bgColor);
+        bg.setStyle(Paint.Style.FILL);
+        c.drawRoundRect(r, h * 0.45f, h * 0.45f, bg);
+        bg.setColor(borderColor);
+        bg.setStyle(Paint.Style.STROKE);
+        bg.setStrokeWidth(tileSize * 0.07f);
+        c.drawRoundRect(r, h * 0.45f, h * 0.45f, bg);
+        Paint tp = new Paint(Paint.ANTI_ALIAS_FLAG);
+        tp.setColor(borderColor);
+        tp.setTextAlign(Paint.Align.CENTER);
+        tp.setTypeface(android.graphics.Typeface.create(
+                android.graphics.Typeface.MONOSPACE, android.graphics.Typeface.BOLD));
+        tp.setTextSize(h * 0.52f);
+        c.drawText(label, r.centerX(), r.centerY() + h * 0.19f, tp);
     }
 
     private void drawCenterText(Canvas c, String text, int color, float textSize) {
