@@ -212,6 +212,57 @@
                 android:lineSpacingMultiplier="1.4"
                 android:layout_marginBottom="20dp" />
 
+            <!-- Power-ups -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="POWER-UPS"
+                android:textColor="@color/pacman_yellow"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="&#x26A1; Speed Boost (cyan)"
+                android:textColor="#FF00CCFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="2dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pac-Man zips through the maze at 60% extra speed for 5 seconds. A cyan ring pulses around him while active. The remaining time is shown in the top bar."
+                android:textColor="@color/score_white"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="&#x25A0; Shield (green)"
+                android:textColor="#FF00EE88"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="2dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="One free life — absorbs the next ghost hit instead of losing a life. The ghost that triggered it turns blue and runs away. A green ring glows around Pac-Man while the shield is active."
+                android:textColor="@color/score_white"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="20dp" />
+
             <!-- Tunnel -->
             <TextView
                 android:layout_width="match_parent"

@@ -112,6 +112,24 @@ public class AudioHelper {
         }, 0.55f);
     }
 
+    /** Rapid ascending sweep — speed boost collected. */
+    public void playSpeedBoost() {
+        if (!soundEnabled) return;
+        playAsync(new float[][]{{523,40},{659,40},{784,40},{1047,80}}, 0.45f);
+    }
+
+    /** Calm ascending chime — shield collected. */
+    public void playShield() {
+        if (!soundEnabled) return;
+        playAsync(new float[][]{{392,60},{494,60},{587,90}}, 0.45f);
+    }
+
+    /** Short metallic ping — shield absorbs a hit. */
+    public void playShieldUsed() {
+        if (!soundEnabled) return;
+        playAsync(new float[][]{{880,50},{660,50},{440,80}}, 0.50f);
+    }
+
     /** Short ascending fanfare on level clear. */
     public void playLevelComplete() {
         if (!soundEnabled) return;

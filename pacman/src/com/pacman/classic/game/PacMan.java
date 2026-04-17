@@ -18,8 +18,13 @@ public class PacMan {
     private float deathAnimProgress; // 0..1
 
     // Speed in tiles per second
-    private static final float SPEED = 7.5f;
+    private static final float SPEED         = 7.5f;
+    private static final float BOOSTED_SPEED = 12.0f;
     private static final float MAX_MOUTH_ANGLE = 45f;
+
+    // Power-up state
+    private float speedBoostTimer = 0f; // remaining seconds of speed boost
+    private boolean hasShield = false;
 
     public PacMan() {
         reset();
@@ -36,12 +41,20 @@ public class PacMan {
         mouthDelta = -2f;
         dying = false;
         deathAnimProgress = 0f;
+        speedBoostTimer = 0f;
+        hasShield = false;
     }
 
     public void update(float dt, Maze maze) {
         if (dying) {
             deathAnimProgress += dt * 1.2f;
             return;
+        }
+
+        // Tick down speed boost
+        if (speedBoostTimer > 0f) {
+            speedBoostTimer -= dt;
+            if (speedBoostTimer < 0f) speedBoostTimer = 0f;
         }
 
         // Animate mouth
@@ -69,7 +82,8 @@ public class PacMan {
             if (!tunnelExit) return;
         }
 
-        float moveAmount = SPEED * dt;
+        float currentSpeed = (speedBoostTimer > 0f) ? BOOSTED_SPEED : SPEED;
+        float moveAmount = currentSpeed * dt;
 
         // Tunnel wrap — must use float, not int cast ((int)(-0.1f)==0 in Java, not -1)
         if (tileRow == Maze.TUNNEL_ROW) {
@@ -107,6 +121,20 @@ public class PacMan {
     public boolean isDeathAnimComplete() {
         return dying && deathAnimProgress >= 1f;
     }
+
+    public void applySpeedBoost(float duration) { speedBoostTimer = duration; }
+
+    public void applyShield() { hasShield = true; }
+
+    /** Consume the shield on a ghost hit. Returns true if shield was active. */
+    public boolean consumeShield() {
+        if (!hasShield) return false;
+        hasShield = false;
+        return true;
+    }
+
+    public boolean isShielded()        { return hasShield; }
+    public float getSpeedBoostTimer()  { return speedBoostTimer; }
 
     public float getX() { return x; }
     public float getY() { return y; }

@@ -42,6 +42,9 @@ public class GameEngine {
         void onPacmanDied();
         void onLevelComplete();
         void onGameOver();
+        void onSpeedBoostCollected();
+        void onShieldCollected();
+        void onShieldUsed();
     }
 
     public GameEngine(GameEventListener listener) {
@@ -135,19 +138,21 @@ public class GameEngine {
         // Collect tile
         int pc = pacman.getTileCol();
         int pr = pacman.getTileRow();
-        boolean wasPowerPellet = maze.isPowerPellet(pr, pc);
-        if (maze.collectTile(pr, pc)) {
-            if (wasPowerPellet) {
-                score += POWER_PELLET_SCORE;
-                ghostsEatenInRow = 0;
-                for (Ghost g : ghosts) {
-                    g.setFrightened();
-                }
-                if (listener != null) listener.onPowerPelletEaten();
-            } else {
-                score += DOT_SCORE;
-                if (listener != null) listener.onDotEaten();
-            }
+        int collected = maze.collectTile(pr, pc);
+        if (collected == Maze.DOT) {
+            score += DOT_SCORE;
+            if (listener != null) listener.onDotEaten();
+        } else if (collected == Maze.POWER_PELLET) {
+            score += POWER_PELLET_SCORE;
+            ghostsEatenInRow = 0;
+            for (Ghost g : ghosts) g.setFrightened();
+            if (listener != null) listener.onPowerPelletEaten();
+        } else if (collected == Maze.SPEED_BOOST) {
+            pacman.applySpeedBoost(5f);
+            if (listener != null) listener.onSpeedBoostCollected();
+        } else if (collected == Maze.SHIELD) {
+            pacman.applyShield();
+            if (listener != null) listener.onShieldCollected();
         }
 
         // Ghost collisions
@@ -160,12 +165,17 @@ public class GameEngine {
                 g.setEaten(eatScore);
                 if (listener != null) listener.onGhostEaten(eatScore);
             } else if (g.getMode() != GhostMode.EATEN) {
-                // Pacman dies
-                lives--;
-                state = State.PACMAN_DYING;
-                stateTimer = 2.5f;
-                if (listener != null) listener.onPacmanDied();
-                return;
+                if (pacman.consumeShield()) {
+                    // Shield absorbs the hit — scare the offending ghost away
+                    g.setFrightened();
+                    if (listener != null) listener.onShieldUsed();
+                } else {
+                    lives--;
+                    state = State.PACMAN_DYING;
+                    stateTimer = 2.5f;
+                    if (listener != null) listener.onPacmanDied();
+                    return;
+                }
             }
         }
 

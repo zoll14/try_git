@@ -11,7 +11,9 @@ public class Maze {
     public static final int EMPTY = 3;
     public static final int GHOST_HOUSE = 4;
     public static final int GHOST_DOOR = 5;
-    public static final int TUNNEL = 6;
+    public static final int TUNNEL      = 6;
+    public static final int SPEED_BOOST = 7;
+    public static final int SHIELD      = 8;
 
     // Ghost starting/home positions
     public static final int GHOST_HOUSE_ROW = 13;
@@ -44,8 +46,8 @@ public class Maze {
         {0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0},
         // Row 7
         {0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0},
-        // Row 8
-        {0,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,0},
+        // Row 8  (col 6 = SPEED_BOOST, col 21 = SPEED_BOOST)
+        {0,1,1,1,1,1,7,0,0,1,1,1,1,0,0,1,1,1,1,0,0,7,1,1,1,1,1,0},
         // Row 9
         {0,0,0,0,0,0,1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,1,0,0,0,0,0,0},
         // Row 10
@@ -80,8 +82,8 @@ public class Maze {
         {0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0},
         // Row 25
         {0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0},
-        // Row 26
-        {0,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,0},
+        // Row 26  (col 6 = SHIELD, col 21 = SHIELD)
+        {0,1,1,1,1,1,8,0,0,1,1,1,1,0,0,1,1,1,1,0,0,8,1,1,1,1,1,0},
         // Row 27
         {0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0},
         // Row 28
@@ -104,7 +106,8 @@ public class Maze {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 tiles[r][c] = BASE_LAYOUT[r][c];
-                if (tiles[r][c] == DOT || tiles[r][c] == POWER_PELLET) {
+                int t = tiles[r][c];
+                if (t == DOT || t == POWER_PELLET) {
                     dotsRemaining++;
                 }
             }
@@ -134,15 +137,19 @@ public class Maze {
         return t != WALL;
     }
 
-    /** Returns true if tile had a collectible (dot or power pellet). */
-    public boolean collectTile(int row, int col) {
+    /**
+     * Collects the tile at (row, col).
+     * Returns the tile type that was collected (DOT, POWER_PELLET, SPEED_BOOST, SHIELD),
+     * or 0 (WALL) if nothing was collected.
+     */
+    public int collectTile(int row, int col) {
         int t = getTile(row, col);
-        if (t == DOT || t == POWER_PELLET) {
+        if (t == DOT || t == POWER_PELLET || t == SPEED_BOOST || t == SHIELD) {
             tiles[row][col] = EMPTY;
-            dotsRemaining--;
-            return true;
+            if (t == DOT || t == POWER_PELLET) dotsRemaining--;
+            return t;
         }
-        return false;
+        return WALL; // nothing collected
     }
 
     public boolean isPowerPellet(int row, int col) {

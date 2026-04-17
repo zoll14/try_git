@@ -34,6 +34,8 @@ public class GameView extends SurfaceView
     private Paint wallPaint;
     private Paint dotPaint;
     private Paint pelletPaint;
+    private Paint speedBoostPaint;
+    private Paint shieldPaint;
     private Paint pacmanPaint;
     private Paint ghostPaintR, ghostPaintP, ghostPaintC, ghostPaintO;
     private Paint frightenedPaint, flashPaint;
@@ -316,6 +318,28 @@ public class GameView extends SurfaceView
             iconX -= iconR * 2.6f;
         }
 
+        // Power-up indicators (small coloured pills left of exit button)
+        if (engine != null) {
+            PacMan pac = engine.getPacman();
+            Paint pip = new Paint(Paint.ANTI_ALIAS_FLAG);
+            pip.setTextAlign(Paint.Align.RIGHT);
+            pip.setTypeface(android.graphics.Typeface.MONOSPACE);
+            float pipSize = rowH * 0.55f;
+            pip.setTextSize(pipSize);
+            float pipX = (exitButtonRect != null ? exitButtonRect.left : getWidth()) - 8f;
+            float pipY = hudHeight * 0.5f + pipSize * 0.38f;
+            if (pac.getSpeedBoostTimer() > 0f) {
+                pip.setColor(0xFF00CCFF);
+                String boostLabel = "\u26A1" + (int) Math.ceil(pac.getSpeedBoostTimer()) + "s";
+                c.drawText(boostLabel, pipX, pipY, pip);
+                pipX -= pip.measureText(boostLabel) + 6f;
+            }
+            if (pac.isShielded()) {
+                pip.setColor(0xFF00EE88);
+                c.drawText("\u25A0SLD", pipX, pipY, pip);
+            }
+        }
+
         // Exit button ✕
         if (exitButtonRect != null) {
             Paint eb = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -346,6 +370,20 @@ public class GameView extends SurfaceView
                 } else if (tile == Maze.POWER_PELLET) {
                     float pulse = 0.18f + 0.06f * (float) Math.sin(System.nanoTime() / 200_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, pelletPaint);
+                } else if (tile == Maze.SPEED_BOOST) {
+                    float pulse = 0.22f + 0.06f * (float) Math.sin(System.nanoTime() / 150_000_000.0);
+                    c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, speedBoostPaint);
+                    hudPaint.setTextSize(tileSize * 0.52f);
+                    hudPaint.setColor(0xFF00CCFF);
+                    hudPaint.setTextAlign(Paint.Align.CENTER);
+                    c.drawText("\u26A1", px + tileSize / 2f, py + tileSize / 2f + tileSize * 0.18f, hudPaint);
+                } else if (tile == Maze.SHIELD) {
+                    float pulse = 0.22f + 0.06f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
+                    c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, shieldPaint);
+                    hudPaint.setTextSize(tileSize * 0.52f);
+                    hudPaint.setColor(0xFF00EE88);
+                    hudPaint.setTextAlign(Paint.Align.CENTER);
+                    c.drawText("\u25A0", px + tileSize / 2f, py + tileSize / 2f + tileSize * 0.18f, hudPaint);
                 } else if (tile == Maze.GHOST_DOOR) {
                     Paint p = new Paint();
                     p.setColor(0xFFFFB8FF);
@@ -376,6 +414,24 @@ public class GameView extends SurfaceView
             pacmanPaint.setStyle(Paint.Style.FILL);
             c.drawArc(oval, 0, 360f - angle, true, pacmanPaint);
             return;
+        }
+
+        // Shield aura (drawn behind Pac-Man)
+        if (p.isShielded()) {
+            Paint aura = new Paint(Paint.ANTI_ALIAS_FLAG);
+            aura.setColor(0x9900EE88);
+            aura.setStyle(Paint.Style.STROKE);
+            aura.setStrokeWidth(tileSize * 0.12f);
+            c.drawCircle(cx, cy, radius * 1.50f, aura);
+        }
+        // Speed boost aura
+        if (p.getSpeedBoostTimer() > 0f) {
+            float pulse = 0.12f * (float) Math.sin(System.nanoTime() / 80_000_000.0);
+            Paint aura = new Paint(Paint.ANTI_ALIAS_FLAG);
+            aura.setColor(0x7700CCFF);
+            aura.setStyle(Paint.Style.STROKE);
+            aura.setStrokeWidth(tileSize * 0.10f);
+            c.drawCircle(cx, cy, radius * (1.28f + pulse), aura);
         }
 
         float mouth = p.getMouthAngle();
@@ -623,6 +679,14 @@ public class GameView extends SurfaceView
         pelletPaint.setColor(0xFFFFB8AE);
         pelletPaint.setStyle(Paint.Style.FILL);
 
+        speedBoostPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        speedBoostPaint.setColor(0xFF00CCFF);
+        speedBoostPaint.setStyle(Paint.Style.FILL);
+
+        shieldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        shieldPaint.setColor(0xFF00EE88);
+        shieldPaint.setStyle(Paint.Style.FILL);
+
         pacmanPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         pacmanPaint.setColor(0xFFFFD700);
 
@@ -814,6 +878,21 @@ public class GameView extends SurfaceView
     @Override
     public void onGameOver() {
         // GameActivity will detect game over state and handle name entry
+    }
+
+    @Override
+    public void onSpeedBoostCollected() {
+        if (audio != null) audio.playSpeedBoost();
+    }
+
+    @Override
+    public void onShieldCollected() {
+        if (audio != null) audio.playShield();
+    }
+
+    @Override
+    public void onShieldUsed() {
+        if (audio != null) audio.playShieldUsed();
     }
 
     public GameEngine.State getGameState() {

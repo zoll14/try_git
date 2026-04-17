@@ -30,7 +30,8 @@ javac \
     $GAME_SOURCES \
     test/com/pacman/classic/test/MazeTest.java \
     test/com/pacman/classic/test/GhostAITest.java \
-    test/com/pacman/classic/test/ScoringTest.java
+    test/com/pacman/classic/test/ScoringTest.java \
+    test/com/pacman/classic/test/PowerUpTest.java
 
 echo "=== Running MazeTest ==="
 java -cp testobj:"$STUB_JAR" com.pacman.classic.test.MazeTest
@@ -40,6 +41,9 @@ java -cp testobj:"$STUB_JAR" com.pacman.classic.test.GhostAITest
 
 echo "=== Running ScoringTest ==="
 java -cp testobj:"$STUB_JAR" com.pacman.classic.test.ScoringTest
+
+echo "=== Running PowerUpTest ==="
+java -cp testobj:"$STUB_JAR" com.pacman.classic.test.PowerUpTest
 
 echo ""
 echo "=== All tests passed ==="

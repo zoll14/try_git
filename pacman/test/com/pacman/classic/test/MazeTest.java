@@ -36,7 +36,7 @@ public class MazeTest {
 
     public void testDimensions() {
         assertEquals("COLS == 28", 28, Maze.COLS);
-        assertEquals("ROWS == 31", 31, Maze.ROWS);
+        assertEquals("ROWS == 30", 30, Maze.ROWS);
     }
 
     public void testBorderIsWall() {
@@ -62,8 +62,8 @@ public class MazeTest {
         // Row 1 col 1 should be a dot
         int before = maze.getDotsRemaining();
         if (maze.getTile(1, 1) == Maze.DOT) {
-            boolean collected = maze.collectTile(1, 1);
-            assertTrue("collect dot returns true", collected);
+            int collected = maze.collectTile(1, 1);
+            assertEquals("collect dot returns DOT", Maze.DOT, collected);
             assertEquals("dots decreased by 1", before - 1, maze.getDotsRemaining());
             assertEquals("tile is now EMPTY", Maze.EMPTY, maze.getTile(1, 1));
         } else {
@@ -71,10 +71,61 @@ public class MazeTest {
         }
     }
 
-    public void testCollectWallReturnsFalse() {
+    public void testCollectWallReturnsZero() {
         Maze maze = new Maze();
-        boolean collected = maze.collectTile(0, 0); // wall
-        assertTrue("collecting wall returns false", !collected);
+        int collected = maze.collectTile(0, 0); // wall
+        assertEquals("collecting wall returns WALL(0)", Maze.WALL, collected);
+    }
+
+    public void testSpeedBoostTileExists() {
+        Maze maze = new Maze();
+        // Power-ups placed at (8,6) and (8,21)
+        assertEquals("speed boost at (8,6)",  Maze.SPEED_BOOST, maze.getTile(8, 6));
+        assertEquals("speed boost at (8,21)", Maze.SPEED_BOOST, maze.getTile(8, 21));
+    }
+
+    public void testShieldTileExists() {
+        Maze maze = new Maze();
+        // Shield placed at (26,6) and (26,21)
+        assertEquals("shield at (26,6)",  Maze.SHIELD, maze.getTile(26, 6));
+        assertEquals("shield at (26,21)", Maze.SHIELD, maze.getTile(26, 21));
+    }
+
+    public void testPowerUpWalkableForPacman() {
+        Maze maze = new Maze();
+        assertTrue("speed boost walkable for pacman", maze.isWalkableForPacman(8, 6));
+        assertTrue("shield walkable for pacman",      maze.isWalkableForPacman(26, 6));
+    }
+
+    public void testCollectSpeedBoost() {
+        Maze maze = new Maze();
+        int dotsBefore = maze.getDotsRemaining();
+        int result = maze.collectTile(8, 6);
+        assertEquals("collecting speed boost returns SPEED_BOOST", Maze.SPEED_BOOST, result);
+        assertEquals("dots unchanged after power-up collect", dotsBefore, maze.getDotsRemaining());
+        assertEquals("tile cleared to EMPTY", Maze.EMPTY, maze.getTile(8, 6));
+    }
+
+    public void testCollectShield() {
+        Maze maze = new Maze();
+        int dotsBefore = maze.getDotsRemaining();
+        int result = maze.collectTile(26, 6);
+        assertEquals("collecting shield returns SHIELD", Maze.SHIELD, result);
+        assertEquals("dots unchanged after shield collect", dotsBefore, maze.getDotsRemaining());
+        assertEquals("tile cleared to EMPTY", Maze.EMPTY, maze.getTile(26, 6));
+    }
+
+    public void testPowerUpsDoNotCountTowardLevelComplete() {
+        Maze maze = new Maze();
+        // Collect all dots/pellets but leave power-ups
+        for (int r = 0; r < Maze.ROWS; r++) {
+            for (int c = 0; c < Maze.COLS; c++) {
+                int t = maze.getTile(r, c);
+                if (t == Maze.DOT || t == Maze.POWER_PELLET) maze.collectTile(r, c);
+            }
+        }
+        // Level should be complete even though power-up tiles remain
+        assertTrue("level complete when all dots eaten (power-ups ignored)", maze.isLevelComplete());
     }
 
     public void testPowerPelletAtRow3Col1() {
@@ -86,8 +137,8 @@ public class MazeTest {
         Maze maze = new Maze();
         int before = maze.getDotsRemaining();
         assertTrue("power pellet exists", maze.isPowerPellet(3, 1));
-        boolean collected = maze.collectTile(3, 1);
-        assertTrue("power pellet collected", collected);
+        int collected = maze.collectTile(3, 1);
+        assertEquals("power pellet collected returns POWER_PELLET", Maze.POWER_PELLET, collected);
         assertEquals("dots decreased", before - 1, maze.getDotsRemaining());
     }
 
@@ -142,7 +193,7 @@ public class MazeTest {
         t.testBorderIsWall();
         t.testDotsCountPositive();
         t.testCollectDot();
-        t.testCollectWallReturnsFalse();
+        t.testCollectWallReturnsZero();
         t.testPowerPelletAtRow3Col1();
         t.testPowerPelletCollect();
         t.testWalkableForPacman();
@@ -150,6 +201,12 @@ public class MazeTest {
         t.testLevelCompleteAfterAllDots();
         t.testPacmanStartTile();
         t.testResetRestoresDots();
+        t.testSpeedBoostTileExists();
+        t.testShieldTileExists();
+        t.testPowerUpWalkableForPacman();
+        t.testCollectSpeedBoost();
+        t.testCollectShield();
+        t.testPowerUpsDoNotCountTowardLevelComplete();
         System.out.println("=== " + t.passed + " passed, " + t.failed + " failed ===");
         System.exit(t.failed > 0 ? 1 : 0);
     }
