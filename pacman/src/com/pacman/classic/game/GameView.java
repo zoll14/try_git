@@ -340,8 +340,7 @@ public class GameView extends SurfaceView
 
     private void drawMaze(Canvas c) {
         Maze maze = engine.getMaze();
-        float r = tileSize * 0.12f;
-        float pr = tileSize * 0.22f;
+        float r = tileSize * 0.17f;   // dot radius (was 0.12)
         for (int row = 0; row < Maze.ROWS; row++) {
             for (int col = 0; col < Maze.COLS; col++) {
                 float px = mazeOffsetX + col * tileSize;
@@ -352,17 +351,17 @@ public class GameView extends SurfaceView
                 } else if (tile == Maze.DOT) {
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, r, dotPaint);
                 } else if (tile == Maze.POWER_PELLET) {
-                    float pulse = 0.18f + 0.06f * (float) Math.sin(System.nanoTime() / 200_000_000.0);
+                    float pulse = 0.26f + 0.07f * (float) Math.sin(System.nanoTime() / 200_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, pelletPaint);
                 } else if (tile == Maze.SPEED_BOOST) {
-                    float pulse = 0.22f + 0.06f * (float) Math.sin(System.nanoTime() / 150_000_000.0);
+                    float pulse = 0.28f + 0.07f * (float) Math.sin(System.nanoTime() / 150_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, speedBoostPaint);
                     hudPaint.setTextSize(tileSize * 0.52f);
                     hudPaint.setColor(0xFF00CCFF);
                     hudPaint.setTextAlign(Paint.Align.CENTER);
                     c.drawText("\u26A1", px + tileSize / 2f, py + tileSize / 2f + tileSize * 0.18f, hudPaint);
                 } else if (tile == Maze.SHIELD) {
-                    float pulse = 0.22f + 0.06f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
+                    float pulse = 0.28f + 0.07f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, shieldPaint);
                     hudPaint.setTextSize(tileSize * 0.52f);
                     hudPaint.setColor(0xFF00EE88);
