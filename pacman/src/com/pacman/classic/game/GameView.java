@@ -351,17 +351,17 @@ public class GameView extends SurfaceView
                 } else if (tile == Maze.DOT) {
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, r, dotPaint);
                 } else if (tile == Maze.POWER_PELLET) {
-                    float pulse = 0.26f + 0.07f * (float) Math.sin(System.nanoTime() / 200_000_000.0);
+                    float pulse = 0.39f + 0.10f * (float) Math.sin(System.nanoTime() / 200_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, pelletPaint);
                 } else if (tile == Maze.SPEED_BOOST) {
-                    float pulse = 0.28f + 0.07f * (float) Math.sin(System.nanoTime() / 150_000_000.0);
+                    float pulse = 0.42f + 0.10f * (float) Math.sin(System.nanoTime() / 150_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, speedBoostPaint);
                     hudPaint.setTextSize(tileSize * 0.52f);
                     hudPaint.setColor(0xFF00CCFF);
                     hudPaint.setTextAlign(Paint.Align.CENTER);
                     c.drawText("\u26A1", px + tileSize / 2f, py + tileSize / 2f + tileSize * 0.18f, hudPaint);
                 } else if (tile == Maze.SHIELD) {
-                    float pulse = 0.28f + 0.07f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
+                    float pulse = 0.42f + 0.10f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
                     c.drawCircle(px + tileSize / 2f, py + tileSize / 2f, tileSize * pulse, shieldPaint);
                     hudPaint.setTextSize(tileSize * 0.52f);
                     hudPaint.setColor(0xFF00EE88);
