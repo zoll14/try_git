@@ -139,6 +139,8 @@ $APKSIGNER sign \
     --ks "$KEYSTORE" \
     --ks-pass pass:android \
     --key-pass pass:android \
+    --v1-signing-enabled true \
+    --v2-signing-enabled true \
     --out bin/pacman.apk \
     bin/pacman-aligned2.apk
 

@@ -2,6 +2,5 @@ gen/
 obj/
 bin/
 testobj/
-debug.keystore
 *.apk
 *.dex
