@@ -231,8 +231,10 @@ const styles = `
 
   .round-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 20px;
   }
 
@@ -241,6 +243,7 @@ const styles = `
     font-size: 22px;
     letter-spacing: 3px;
     color: #e8e0d0;
+    flex-shrink: 0;
   }
 
   .round-title span { color: #f5c842; }
@@ -325,9 +328,21 @@ const styles = `
 
   .action-row {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    justify-content: flex-end;
     margin-top: 4px;
+  }
+
+  .action-add-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-confirm {
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    letter-spacing: 2px;
   }
 
   .divider {
@@ -670,16 +685,18 @@ export default function Flip7Tracker() {
               </div>
 
               <div className="action-row">
-                <input
-                  className="input"
-                  style={{flex:1, maxWidth: 200}}
-                  placeholder="+ Új játékos neve..."
-                  value={newPlayerName}
-                  onChange={e => setNewPlayerName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
-                />
-                <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
-                <button className="btn btn-primary" onClick={confirmRound}>
+                <div className="action-add-row">
+                  <input
+                    className="input"
+                    style={{flex:1}}
+                    placeholder="+ Új játékos neve..."
+                    value={newPlayerName}
+                    onChange={e => setNewPlayerName(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
+                  />
+                  <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
+                </div>
+                <button className="btn btn-primary btn-confirm" onClick={confirmRound}>
                   KÖR RÖGZÍTÉSE →
                 </button>
               </div>
