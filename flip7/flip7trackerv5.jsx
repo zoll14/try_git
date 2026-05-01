@@ -276,13 +276,24 @@ const styles = `
 
   .cards-input {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
 
   .input-hint {
     font-size: 10px;
     color: #445;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+  }
+
+  .input-error {
+    font-size: 10px;
+    color: #e05;
+    margin-bottom: 8px;
+    min-height: 14px;
+  }
+
+  .input.invalid {
+    border-color: #e05;
   }
 
   .toggle-row {
@@ -396,6 +407,26 @@ const styles = `
 
 function parseCards(str) {
   return str.split(/[\s,]+/).map(s => parseInt(s)).filter(n => !isNaN(n));
+}
+
+const PLUS_ALLOWED = new Set([2, 4, 6, 8, 10]);
+
+function validateNumCards(str) {
+  if (!str.trim()) return null;
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
+    const n = parseInt(t);
+    return isNaN(n) || n < 0 || n > 12;
+  });
+  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 0–12` : null;
+}
+
+function validatePlusCards(str) {
+  if (!str.trim()) return null;
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
+    const n = parseInt(t);
+    return isNaN(n) || !PLUS_ALLOWED.has(n);
+  });
+  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 2, 4, 6, 8, 10` : null;
 }
 
 function calcScore(cards, bust, flip7, plusCards, multiplier) {
@@ -630,29 +661,33 @@ export default function Flip7Tracker() {
                 {players.map(p => {
                   const e = entry[p] || { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false };
                   const preview = getPreview(p);
+                  const numErr = e.bust ? null : validateNumCards(e.cards);
+                  const plusErr = e.bust ? null : validatePlusCards(e.plusCards);
                   return (
                     <div key={p} className={`player-entry${e.bust ? " is-bust" : e.flip7 ? " is-flip7" : ""}`}>
                       <div className="player-entry-name">{p}</div>
 
-                      <div className="input-hint">Számkártyák</div>
+                      <div className="input-hint">Számkártyák (0–12)</div>
                       <input
-                        className="input cards-input"
+                        className={`input cards-input${numErr ? " invalid" : ""}`}
                         placeholder="pl. 3 7 12 0 5"
                         value={e.cards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "cards", ev.target.value)}
                       />
+                      <div className="input-error">{numErr}</div>
 
-                      <div className="input-hint" style={{marginTop:6}}>+N kártyák (összeadós)</div>
+                      <div className="input-hint">+N kártyák (2, 4, 6, 8, 10)</div>
                       <input
-                        className="input cards-input"
+                        className={`input cards-input${plusErr ? " invalid" : ""}`}
                         placeholder="pl. 2 4"
                         value={e.plusCards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "plusCards", ev.target.value)}
                       />
+                      <div className="input-error">{plusErr}</div>
 
-                      <div className="toggle-row" style={{marginTop:10}}>
+                      <div className="toggle-row">
                         <button
                           className={`toggle-btn${e.bust ? " active-bust" : ""}`}
                           onClick={() => toggleBust(p)}
@@ -684,22 +719,35 @@ export default function Flip7Tracker() {
                 })}
               </div>
 
-              <div className="action-row">
-                <div className="action-add-row">
-                  <input
-                    className="input"
-                    style={{flex:1}}
-                    placeholder="+ Új játékos neve..."
-                    value={newPlayerName}
-                    onChange={e => setNewPlayerName(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
-                  />
-                  <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
-                </div>
-                <button className="btn btn-primary btn-confirm" onClick={confirmRound}>
-                  KÖR RÖGZÍTÉSE →
-                </button>
-              </div>
+              {(() => {
+                const hasErrors = players.some(p => {
+                  const e = entry[p] || {};
+                  return !e.bust && (validateNumCards(e.cards) || validatePlusCards(e.plusCards));
+                });
+                return (
+                  <div className="action-row">
+                    <div className="action-add-row">
+                      <input
+                        className="input"
+                        style={{flex:1}}
+                        placeholder="+ Új játékos neve..."
+                        value={newPlayerName}
+                        onChange={e => setNewPlayerName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
+                      />
+                      <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
+                    </div>
+                    <button
+                      className="btn btn-primary btn-confirm"
+                      onClick={confirmRound}
+                      disabled={hasErrors}
+                      style={hasErrors ? {opacity:0.4, cursor:'not-allowed'} : {}}
+                    >
+                      KÖR RÖGZÍTÉSE →
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
 
           </div>
