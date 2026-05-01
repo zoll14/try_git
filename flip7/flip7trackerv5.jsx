@@ -527,6 +527,7 @@ export default function Flip7Tracker() {
   const [apiKeyDraft, setApiKeyDraft] = useState("");
   const fileInputRef = useRef(null);
   const pendingPlayerRef = useRef(null);
+  const playerInputRef = useRef(null);
 
   const showConfirm = (msg, onConfirm) => setDialog({ msg, onConfirm });
   const closeDialog = () => setDialog(null);
@@ -618,6 +619,7 @@ export default function Flip7Tracker() {
     if (n && !players.includes(n)) {
       setPlayers([...players, n]);
       setPlayerName("");
+      setTimeout(() => playerInputRef.current?.focus(), 0);
     }
   };
 
@@ -727,6 +729,7 @@ export default function Flip7Tracker() {
             ))}
             <div className="player-row">
               <input
+                ref={playerInputRef}
                 className="input"
                 placeholder="Játékos neve..."
                 value={playerName}
