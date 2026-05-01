@@ -343,6 +343,40 @@ const styles = `
     font-size: 13px;
     letter-spacing: 1px;
   }
+
+  /* Confirm dialog */
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+
+  .dialog-box {
+    background: #161b22;
+    border: 1px solid #2a3040;
+    border-radius: 12px;
+    padding: 28px 24px 20px;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .dialog-msg {
+    font-size: 14px;
+    color: #e8e0d0;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .dialog-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
 `;
 
 function parseCards(str) {
@@ -369,6 +403,10 @@ export default function Flip7Tracker() {
   const [rounds, setRounds] = useState([]); // [{name: score}, ...]
   const [entry, setEntry] = useState({}); // {name: {cards, bust, flip7}}
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [dialog, setDialog] = useState(null); // {msg, onConfirm}
+
+  const showConfirm = (msg, onConfirm) => setDialog({ msg, onConfirm });
+  const closeDialog = () => setDialog(null);
 
   const addPlayerInGame = () => {
     const n = newPlayerName.trim();
@@ -437,19 +475,22 @@ export default function Flip7Tracker() {
   const undoRound = () => setRounds(rounds.slice(0, -1));
 
   const resetAll = () => {
-    if (!window.confirm("Mindent törlünk? (játékosok + körök)")) return;
-    setPlayers([]);
-    setRounds([]);
-    setEntry({});
-    setPhase("setup");
+    showConfirm("Mindent törlünk?\n(játékosok + körök)", () => {
+      setPlayers([]);
+      setRounds([]);
+      setEntry({});
+      setPlayerName("");
+      setPhase("setup");
+    });
   };
 
   const newGame = () => {
-    if (!window.confirm("Új játék? (körök törlődnek, játékosok maradnak)")) return;
-    setRounds([]);
-    const init = {};
-    players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
-    setEntry(init);
+    showConfirm("Új játék?\n(körök törlődnek, játékosok maradnak)", () => {
+      setRounds([]);
+      const init = {};
+      players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
+      setEntry(init);
+    });
   };
 
   // Totals
@@ -647,6 +688,18 @@ export default function Flip7Tracker() {
           </div>
         )}
       </div>
+
+      {dialog && (
+        <div className="dialog-overlay" onClick={closeDialog}>
+          <div className="dialog-box" onClick={e => e.stopPropagation()}>
+            <div className="dialog-msg">{dialog.msg.split('\n').map((l, i) => <div key={i}>{l}</div>)}</div>
+            <div className="dialog-btns">
+              <button className="btn" onClick={closeDialog}>Mégse</button>
+              <button className="btn btn-danger" onClick={() => { dialog.onConfirm(); closeDialog(); }}>Igen</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
