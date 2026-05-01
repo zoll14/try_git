@@ -231,8 +231,10 @@ const styles = `
 
   .round-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 20px;
   }
 
@@ -241,6 +243,7 @@ const styles = `
     font-size: 22px;
     letter-spacing: 3px;
     color: #e8e0d0;
+    flex-shrink: 0;
   }
 
   .round-title span { color: #f5c842; }
@@ -263,23 +266,54 @@ const styles = `
   .player-entry.is-bust { border-color: rgba(238,0,85,0.3); }
   .player-entry.is-flip7 { border-color: rgba(245,200,66,0.4); }
 
+  .player-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
   .player-entry-name {
     font-size: 12px;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: #778;
-    margin-bottom: 10px;
   }
+
+  .btn-camera {
+    background: none;
+    border: 1px solid #2a3040;
+    border-radius: 4px;
+    color: #667;
+    font-size: 15px;
+    padding: 2px 8px;
+    cursor: pointer;
+    line-height: 1.5;
+    transition: all 0.15s;
+  }
+  .btn-camera:hover { border-color: #778; color: #aab; background: #1e2530; }
+  .btn-camera:disabled { opacity: 0.25; cursor: not-allowed; }
 
   .cards-input {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
 
   .input-hint {
     font-size: 10px;
     color: #445;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+  }
+
+  .input-error {
+    font-size: 10px;
+    color: #e05;
+    margin-bottom: 8px;
+    min-height: 14px;
+  }
+
+  .input.invalid {
+    border-color: #e05;
   }
 
   .toggle-row {
@@ -323,11 +357,53 @@ const styles = `
 
   .preview-score.bust { color: #e05; }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .scan-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,17,23,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    gap: 20px;
+  }
+
+  .scan-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid #2a3040;
+    border-top-color: #f5c842;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .scan-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: #f5c842;
+  }
+
   .action-row {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    justify-content: flex-end;
     margin-top: 4px;
+  }
+
+  .action-add-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-confirm {
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    letter-spacing: 2px;
   }
 
   .divider {
@@ -343,10 +419,64 @@ const styles = `
     font-size: 13px;
     letter-spacing: 1px;
   }
+
+  /* Confirm dialog */
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+
+  .dialog-box {
+    background: #161b22;
+    border: 1px solid #2a3040;
+    border-radius: 12px;
+    padding: 28px 24px 20px;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .dialog-msg {
+    font-size: 14px;
+    color: #e8e0d0;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .dialog-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
 `;
 
 function parseCards(str) {
   return str.split(/[\s,]+/).map(s => parseInt(s)).filter(n => !isNaN(n));
+}
+
+const PLUS_ALLOWED = new Set([2, 4, 6, 8, 10]);
+
+function validateNumCards(str) {
+  if (!str.trim()) return null;
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
+    const n = parseInt(t);
+    return isNaN(n) || n < 0 || n > 12;
+  });
+  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 0–12` : null;
+}
+
+function validatePlusCards(str) {
+  if (!str.trim()) return null;
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
+    const n = parseInt(t);
+    return isNaN(n) || !PLUS_ALLOWED.has(n);
+  });
+  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 2, 4, 6, 8, 10` : null;
 }
 
 function calcScore(cards, bust, flip7, plusCards, multiplier) {
@@ -362,6 +492,27 @@ function getRank(players, totals) {
   return (name) => sorted.indexOf(name) + 1;
 }
 
+function resizeImage(file, maxPx = 1024) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (re) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.78));
+      };
+      img.onerror = reject;
+      img.src = re.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function Flip7Tracker() {
   const [phase, setPhase] = useState("setup"); // setup | game
   const [playerName, setPlayerName] = useState("");
@@ -369,6 +520,89 @@ export default function Flip7Tracker() {
   const [rounds, setRounds] = useState([]); // [{name: score}, ...]
   const [entry, setEntry] = useState({}); // {name: {cards, bust, flip7}}
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [dialog, setDialog] = useState(null); // {msg, onConfirm}
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [apiKeyModal, setApiKeyModal] = useState(false);
+  const [apiKeyDraft, setApiKeyDraft] = useState("");
+  const fileInputRef = useRef(null);
+  const pendingPlayerRef = useRef(null);
+
+  const showConfirm = (msg, onConfirm) => setDialog({ msg, onConfirm });
+  const closeDialog = () => setDialog(null);
+
+  const handleCameraClick = (playerName) => {
+    const key = localStorage.getItem('flip7_claude_key');
+    if (!key) {
+      pendingPlayerRef.current = playerName;
+      setApiKeyModal(true);
+      return;
+    }
+    pendingPlayerRef.current = playerName;
+    fileInputRef.current.value = '';
+    fileInputRef.current.click();
+  };
+
+  const saveApiKey = () => {
+    const k = apiKeyDraft.trim();
+    if (!k) return;
+    localStorage.setItem('flip7_claude_key', k);
+    setApiKeyDraft('');
+    setApiKeyModal(false);
+    setTimeout(() => { fileInputRef.current.value = ''; fileInputRef.current.click(); }, 100);
+  };
+
+  const handleFileChange = async (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    ev.target.value = '';
+    const player = pendingPlayerRef.current;
+    const apiKey = localStorage.getItem('flip7_claude_key');
+    setCameraLoading(true);
+    try {
+      const dataUrl = await resizeImage(file);
+      const comma = dataUrl.indexOf(',');
+      const mimeType = dataUrl.slice(0, comma).match(/:(.*?);/)[1];
+      const base64Data = dataUrl.slice(comma + 1);
+      const requestBody = JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Data } },
+          { type: 'text', text: 'Flip 7 kártyajáték lapokat azonosítasz a képen. Számkártyák: 0-12 közötti egész számok. Plusz kártyák: +2, +4, +6, +8 vagy +10 (+ jellel jelölve). Válaszolj CSAK JSON-ban: {"numberCards":[egész számok 0-12],"plusCards":[2/4/6/8/10 értékek]}. Ha nem látszanak lapok: {"error":"no_cards_detected"}' }
+        ]}]
+      });
+      window.__onClaudeResult = (raw) => {
+        setCameraLoading(false);
+        try {
+          const resp = JSON.parse(raw);
+          if (resp.error && typeof resp.error === 'object') {
+            setCameraError('API hiba: ' + (resp.error.message || 'ismeretlen'));
+            return;
+          }
+          const text = resp.content?.[0]?.text ?? '';
+          const m = text.match(/\{[\s\S]*\}/);
+          if (!m) { setCameraError('no_cards_detected'); return; }
+          const cards = JSON.parse(m[0]);
+          if (cards.error === 'no_cards_detected') { setCameraError('no_cards_detected'); return; }
+          if (cards.numberCards?.length) updateEntry(player, 'cards', cards.numberCards.join(' '));
+          if (cards.plusCards?.length) updateEntry(player, 'plusCards', cards.plusCards.join(' '));
+          if (!cards.numberCards?.length && !cards.plusCards?.length) setCameraError('no_cards_detected');
+        } catch (e) {
+          setCameraError('Feldolgozási hiba');
+        }
+      };
+      if (window.Android) {
+        window.Android.analyzeImage(apiKey, requestBody);
+      } else {
+        setCameraLoading(false);
+        setCameraError('Android interfész nem elérhető');
+      }
+    } catch (e) {
+      setCameraLoading(false);
+      setCameraError('Hiba: ' + e.message);
+    }
+  };
 
   const addPlayerInGame = () => {
     const n = newPlayerName.trim();
@@ -437,19 +671,22 @@ export default function Flip7Tracker() {
   const undoRound = () => setRounds(rounds.slice(0, -1));
 
   const resetAll = () => {
-    if (!window.confirm("Mindent törlünk? (játékosok + körök)")) return;
-    setPlayers([]);
-    setRounds([]);
-    setEntry({});
-    setPhase("setup");
+    showConfirm("Mindent törlünk?\n(játékosok + körök)", () => {
+      setPlayers([]);
+      setRounds([]);
+      setEntry({});
+      setPlayerName("");
+      setPhase("setup");
+    });
   };
 
   const newGame = () => {
-    if (!window.confirm("Új játék? (körök törlődnek, játékosok maradnak)")) return;
-    setRounds([]);
-    const init = {};
-    players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
-    setEntry(init);
+    showConfirm("Új játék?\n(körök törlődnek, játékosok maradnak)", () => {
+      setRounds([]);
+      const init = {};
+      players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
+      setEntry(init);
+    });
   };
 
   // Totals
@@ -512,6 +749,8 @@ export default function Flip7Tracker() {
 
         {phase === "game" && (
           <div className="game-layout">
+            <input ref={fileInputRef} type="file" accept="image/*" capture="environment"
+              style={{display:'none'}} onChange={handleFileChange} />
 
             {/* Scoreboard */}
             <div className="scoreboard">
@@ -574,29 +813,38 @@ export default function Flip7Tracker() {
                 {players.map(p => {
                   const e = entry[p] || { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false };
                   const preview = getPreview(p);
+                  const numErr = e.bust ? null : validateNumCards(e.cards);
+                  const plusErr = e.bust ? null : validatePlusCards(e.plusCards);
                   return (
                     <div key={p} className={`player-entry${e.bust ? " is-bust" : e.flip7 ? " is-flip7" : ""}`}>
-                      <div className="player-entry-name">{p}</div>
+                      <div className="player-entry-header">
+                        <div className="player-entry-name">{p}</div>
+                        <button className="btn-camera" title="Lapok fotózása"
+                          disabled={e.bust || cameraLoading}
+                          onClick={() => handleCameraClick(p)}>📷</button>
+                      </div>
 
-                      <div className="input-hint">Számkártyák</div>
+                      <div className="input-hint">Számkártyák (0–12)</div>
                       <input
-                        className="input cards-input"
+                        className={`input cards-input${numErr ? " invalid" : ""}`}
                         placeholder="pl. 3 7 12 0 5"
                         value={e.cards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "cards", ev.target.value)}
                       />
+                      <div className="input-error">{numErr}</div>
 
-                      <div className="input-hint" style={{marginTop:6}}>+N kártyák (összeadós)</div>
+                      <div className="input-hint">+N kártyák (2, 4, 6, 8, 10)</div>
                       <input
-                        className="input cards-input"
+                        className={`input cards-input${plusErr ? " invalid" : ""}`}
                         placeholder="pl. 2 4"
                         value={e.plusCards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "plusCards", ev.target.value)}
                       />
+                      <div className="input-error">{plusErr}</div>
 
-                      <div className="toggle-row" style={{marginTop:10}}>
+                      <div className="toggle-row">
                         <button
                           className={`toggle-btn${e.bust ? " active-bust" : ""}`}
                           onClick={() => toggleBust(p)}
@@ -628,25 +876,101 @@ export default function Flip7Tracker() {
                 })}
               </div>
 
-              <div className="action-row">
-                <input
-                  className="input"
-                  style={{flex:1, maxWidth: 200}}
-                  placeholder="+ Új játékos neve..."
-                  value={newPlayerName}
-                  onChange={e => setNewPlayerName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
-                />
-                <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
-                <button className="btn btn-primary" onClick={confirmRound}>
-                  KÖR RÖGZÍTÉSE →
-                </button>
-              </div>
+              {(() => {
+                const hasErrors = players.some(p => {
+                  const e = entry[p] || {};
+                  return !e.bust && (validateNumCards(e.cards) || validatePlusCards(e.plusCards));
+                });
+                return (
+                  <div className="action-row">
+                    <div className="action-add-row">
+                      <input
+                        className="input"
+                        style={{flex:1}}
+                        placeholder="+ Új játékos neve..."
+                        value={newPlayerName}
+                        onChange={e => setNewPlayerName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
+                      />
+                      <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
+                    </div>
+                    <button
+                      className="btn btn-primary btn-confirm"
+                      onClick={confirmRound}
+                      disabled={hasErrors}
+                      style={hasErrors ? {opacity:0.4, cursor:'not-allowed'} : {}}
+                    >
+                      KÖR RÖGZÍTÉSE →
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
 
           </div>
         )}
       </div>
+
+      {dialog && (
+        <div className="dialog-overlay" onClick={closeDialog}>
+          <div className="dialog-box" onClick={e => e.stopPropagation()}>
+            <div className="dialog-msg">{dialog.msg.split('\n').map((l, i) => <div key={i}>{l}</div>)}</div>
+            <div className="dialog-btns">
+              <button className="btn" onClick={closeDialog}>Mégse</button>
+              <button className="btn btn-danger" onClick={() => { dialog.onConfirm(); closeDialog(); }}>Igen</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cameraLoading && (
+        <div className="scan-overlay">
+          <div className="scan-spinner" />
+          <div className="scan-label">LAPOK FELISMERÉSE...</div>
+        </div>
+      )}
+
+      {cameraError && (
+        <div className="dialog-overlay" onClick={() => setCameraError(null)}>
+          <div className="dialog-box" onClick={e => e.stopPropagation()}>
+            <div className="dialog-msg">
+              {cameraError === 'no_cards_detected'
+                ? 'Nem sikerült lapokat felismerni a képen. Kérlek töltsd ki manuálisan.'
+                : cameraError}
+            </div>
+            <div className="dialog-btns">
+              <button className="btn btn-primary" onClick={() => setCameraError(null)}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {apiKeyModal && (
+        <div className="dialog-overlay" onClick={() => setApiKeyModal(false)}>
+          <div className="dialog-box" onClick={e => e.stopPropagation()}>
+            <div className="dialog-msg">
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:3,color:'#f5c842',marginBottom:12}}>
+                CLAUDE API KULCS
+              </div>
+              <div style={{fontSize:11,color:'#556',marginBottom:14}}>
+                A lapfelismeréshez szükséges. Csak egyszer kell megadni, az app elmenti.
+              </div>
+              <input className="input" style={{width:'100%',fontSize:12}}
+                placeholder="sk-ant-api03-..."
+                value={apiKeyDraft}
+                onChange={e => setApiKeyDraft(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveApiKey()}
+                autoFocus
+              />
+            </div>
+            <div className="dialog-btns">
+              <button className="btn" onClick={() => setApiKeyModal(false)}>Mégse</button>
+              <button className="btn btn-primary" onClick={saveApiKey}
+                disabled={!apiKeyDraft.trim()}>Mentés →</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
