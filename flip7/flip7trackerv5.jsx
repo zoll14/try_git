@@ -1,6 +1,83 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const FLIP7_BONUS = 15;
+
+const TRANSLATIONS = {
+  hu: {
+    setupTitle: "JÁTÉKOSOK",
+    playerNamePlaceholder: "Játékos neve...",
+    addPlayer: "+ Add",
+    startGame: "JÁTÉK INDÍTÁSA →",
+    playerCol: "Játékos",
+    roundN: (n) => `${n}. kör`,
+    total: "Összesen",
+    noRounds: "Még nem volt kör",
+    roundTitleParts: (n) => [`${n}. `, "KÖR", " bevitele"],
+    undo: "↩ Undo",
+    newGame: "↺ Új játék",
+    reset: "✕ Reset",
+    numCardsLabel: "Számkártyák (0–12)",
+    numCardsPlaceholder: "pl. 3 7 12 0 5",
+    plusCardsLabel: "+N kártyák (2, 4, 6, 8, 10)",
+    plusCardsPlaceholder: "pl. 2 4",
+    confirmRound: "KÖR RÖGZÍTÉSE →",
+    newPlayerPlaceholder: "+ Új játékos neve...",
+    addInGame: "Hozzáad",
+    invalidNum: (bad) => `Érvénytelen: ${bad} — csak 0–12`,
+    invalidPlus: (bad) => `Érvénytelen: ${bad} — csak 2, 4, 6, 8, 10`,
+    resetConfirm: "Mindent törlünk?\n(játékosok + körök)",
+    newGameConfirm: "Új játék?\n(körök törlődnek, játékosok maradnak)",
+    cancel: "Mégse",
+    yes: "Igen",
+    ok: "OK",
+    scanning: "LAPOK FELISMERÉSE...",
+    noCardsDetected: "Nem sikerült lapokat felismerni a képen. Kérlek töltsd ki manuálisan.",
+    apiError: (msg) => `API hiba: ${msg}`,
+    processingError: "Feldolgozási hiba",
+    androidUnavail: "Android interfész nem elérhető",
+    apiKeyTitle: "CLAUDE API KULCS",
+    apiKeyDesc: "A lapfelismeréshez szükséges. Csak egyszer kell megadni, az alkalmazás elmenti.",
+    apiKeyPlaceholder: "sk-ant-api03-...",
+    save: "Mentés →",
+  },
+  en: {
+    setupTitle: "PLAYERS",
+    playerNamePlaceholder: "Player name...",
+    addPlayer: "+ Add",
+    startGame: "START GAME →",
+    playerCol: "Player",
+    roundN: (n) => `Round ${n}`,
+    total: "Total",
+    noRounds: "No rounds yet",
+    roundTitleParts: (n) => ["ROUND ", String(n), " ENTRY"],
+    undo: "↩ Undo",
+    newGame: "↺ New game",
+    reset: "✕ Reset",
+    numCardsLabel: "Number cards (0–12)",
+    numCardsPlaceholder: "e.g. 3 7 12 0 5",
+    plusCardsLabel: "+N cards (2, 4, 6, 8, 10)",
+    plusCardsPlaceholder: "e.g. 2 4",
+    confirmRound: "CONFIRM ROUND →",
+    newPlayerPlaceholder: "+ New player name...",
+    addInGame: "Add",
+    invalidNum: (bad) => `Invalid: ${bad} — only 0–12`,
+    invalidPlus: (bad) => `Invalid: ${bad} — only 2, 4, 6, 8, 10`,
+    resetConfirm: "Reset everything?\n(players + rounds)",
+    newGameConfirm: "New game?\n(rounds deleted, players remain)",
+    cancel: "Cancel",
+    yes: "Yes",
+    ok: "OK",
+    scanning: "RECOGNIZING CARDS...",
+    noCardsDetected: "Could not recognize cards in the photo. Please fill in manually.",
+    apiError: (msg) => `API error: ${msg}`,
+    processingError: "Processing error",
+    androidUnavail: "Android interface unavailable",
+    apiKeyTitle: "CLAUDE API KEY",
+    apiKeyDesc: "Needed for card recognition. Only needs to be entered once, the app saves it.",
+    apiKeyPlaceholder: "sk-ant-api03-...",
+    save: "Save →",
+  },
+};
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
@@ -43,6 +120,41 @@ const styles = `
     color: #556;
     margin-top: 4px;
     text-transform: uppercase;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .lang-btn {
+    background: none;
+    border: 1px solid #2a3040;
+    border-radius: 4px;
+    color: #445;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lang-btn.lang-active {
+    border-color: #f5c842;
+    color: #f5c842;
+  }
+
+  .lang-btn:hover {
+    border-color: #556;
+    color: #778;
+  }
+
+  .lang-btn.lang-active:hover {
+    border-color: #f5c842;
+    color: #f5c842;
   }
 
   /* Setup */
@@ -158,21 +270,10 @@ const styles = `
     z-index: 2;
   }
 
-  th.name-col {
-    background: #1e2530;
-  }
-
-  td.name-col {
-    background: #161b22;
-  }
-
-  tr:hover td.name-col {
-    background: #1a2030;
-  }
-
-  .total-row td.name-col {
-    background: #1e2530 !important;
-  }
+  th.name-col { background: #1e2530; }
+  td.name-col { background: #161b22; }
+  tr:hover td.name-col { background: #1a2030; }
+  .total-row td.name-col { background: #1e2530 !important; }
 
   td {
     padding: 9px 14px;
@@ -312,9 +413,7 @@ const styles = `
     min-height: 14px;
   }
 
-  .input.invalid {
-    border-color: #e05;
-  }
+  .input.invalid { border-color: #e05; }
 
   .toggle-row {
     display: flex;
@@ -461,22 +560,22 @@ function parseCards(str) {
 
 const PLUS_ALLOWED = new Set([2, 4, 6, 8, 10]);
 
-function validateNumCards(str) {
+function validateNumCards(str, t) {
   if (!str.trim()) return null;
-  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
-    const n = parseInt(t);
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(tok => {
+    const n = parseInt(tok);
     return isNaN(n) || n < 0 || n > 12;
   });
-  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 0–12` : null;
+  return bad.length ? t.invalidNum(bad.join(', ')) : null;
 }
 
-function validatePlusCards(str) {
+function validatePlusCards(str, t) {
   if (!str.trim()) return null;
-  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(t => {
-    const n = parseInt(t);
+  const bad = str.trim().split(/[\s,]+/).filter(s => s !== '').filter(tok => {
+    const n = parseInt(tok);
     return isNaN(n) || !PLUS_ALLOWED.has(n);
   });
-  return bad.length ? `Érvénytelen: ${bad.join(', ')} — csak 2, 4, 6, 8, 10` : null;
+  return bad.length ? t.invalidPlus(bad.join(', ')) : null;
 }
 
 function calcScore(cards, bust, flip7, plusCards, multiplier) {
@@ -514,19 +613,27 @@ function resizeImage(file, maxPx = 1024) {
 }
 
 export default function Flip7Tracker() {
-  const [phase, setPhase] = useState("setup"); // setup | game
+  const [lang, setLang] = useState(() => localStorage.getItem('flip7_lang') || 'hu');
+  const [phase, setPhase] = useState("setup");
   const [playerName, setPlayerName] = useState("");
   const [players, setPlayers] = useState([]);
-  const [rounds, setRounds] = useState([]); // [{name: score}, ...]
-  const [entry, setEntry] = useState({}); // {name: {cards, bust, flip7}}
+  const [rounds, setRounds] = useState([]);
+  const [entry, setEntry] = useState({});
   const [newPlayerName, setNewPlayerName] = useState("");
-  const [dialog, setDialog] = useState(null); // {msg, onConfirm}
+  const [dialog, setDialog] = useState(null);
   const [cameraLoading, setCameraLoading] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [apiKeyModal, setApiKeyModal] = useState(false);
   const [apiKeyDraft, setApiKeyDraft] = useState("");
   const fileInputRef = useRef(null);
   const pendingPlayerRef = useRef(null);
+  const playerInputRef = useRef(null);
+
+  const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    localStorage.setItem('flip7_lang', lang);
+  }, [lang]);
 
   const showConfirm = (msg, onConfirm) => setDialog({ msg, onConfirm });
   const closeDialog = () => setDialog(null);
@@ -577,7 +684,7 @@ export default function Flip7Tracker() {
         try {
           const resp = JSON.parse(raw);
           if (resp.error && typeof resp.error === 'object') {
-            setCameraError('API hiba: ' + (resp.error.message || 'ismeretlen'));
+            setCameraError('api_error:' + (resp.error.message || '?'));
             return;
           }
           const text = resp.content?.[0]?.text ?? '';
@@ -589,18 +696,18 @@ export default function Flip7Tracker() {
           if (cards.plusCards?.length) updateEntry(player, 'plusCards', cards.plusCards.join(' '));
           if (!cards.numberCards?.length && !cards.plusCards?.length) setCameraError('no_cards_detected');
         } catch (e) {
-          setCameraError('Feldolgozási hiba');
+          setCameraError('processing_error');
         }
       };
       if (window.Android) {
         window.Android.analyzeImage(apiKey, requestBody);
       } else {
         setCameraLoading(false);
-        setCameraError('Android interfész nem elérhető');
+        setCameraError('android_unavail');
       }
     } catch (e) {
       setCameraLoading(false);
-      setCameraError('Hiba: ' + e.message);
+      setCameraError('processing_error');
     }
   };
 
@@ -612,12 +719,12 @@ export default function Flip7Tracker() {
     setNewPlayerName("");
   };
 
-  // Setup
   const addPlayer = () => {
     const n = playerName.trim();
     if (n && !players.includes(n)) {
       setPlayers([...players, n]);
       setPlayerName("");
+      setTimeout(() => playerInputRef.current?.focus(), 0);
     }
   };
 
@@ -631,7 +738,6 @@ export default function Flip7Tracker() {
     setPhase("game");
   };
 
-  // Entry helpers
   const updateEntry = (name, field, value) => {
     setEntry(prev => ({ ...prev, [name]: { ...prev[name], [field]: value } }));
   };
@@ -671,7 +777,7 @@ export default function Flip7Tracker() {
   const undoRound = () => setRounds(rounds.slice(0, -1));
 
   const resetAll = () => {
-    showConfirm("Mindent törlünk?\n(játékosok + körök)", () => {
+    showConfirm(t.resetConfirm, () => {
       setPlayers([]);
       setRounds([]);
       setEntry({});
@@ -681,7 +787,7 @@ export default function Flip7Tracker() {
   };
 
   const newGame = () => {
-    showConfirm("Új játék?\n(körök törlődnek, játékosok maradnak)", () => {
+    showConfirm(t.newGameConfirm, () => {
       setRounds([]);
       const init = {};
       players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
@@ -689,7 +795,6 @@ export default function Flip7Tracker() {
     });
   };
 
-  // Totals
   const totals = {};
   players.forEach(p => {
     totals[p] = rounds.reduce((sum, r) => sum + (r[p]?.score || 0), 0);
@@ -707,6 +812,12 @@ export default function Flip7Tracker() {
 
   const rankOf = getRank(players, totals);
 
+  const cameraErrorMsg = cameraError === 'no_cards_detected' ? t.noCardsDetected
+    : cameraError === 'processing_error' ? t.processingError
+    : cameraError === 'android_unavail' ? t.androidUnavail
+    : cameraError?.startsWith('api_error:') ? t.apiError(cameraError.slice(10))
+    : cameraError;
+
   return (
     <>
       <style>{styles}</style>
@@ -714,11 +825,15 @@ export default function Flip7Tracker() {
         <div className="header">
           <div className="logo">FLIP<span> 7</span></div>
           <div className="subtitle">Score Tracker</div>
+          <div className="lang-switcher">
+            <button className={`lang-btn${lang === 'hu' ? ' lang-active' : ''}`} onClick={() => setLang('hu')}>HU</button>
+            <button className={`lang-btn${lang === 'en' ? ' lang-active' : ''}`} onClick={() => setLang('en')}>EN</button>
+          </div>
         </div>
 
         {phase === "setup" && (
           <div className="setup-card">
-            <div className="setup-title">JÁTÉKOSOK</div>
+            <div className="setup-title">{t.setupTitle}</div>
             {players.map(p => (
               <div key={p} className="player-row">
                 <div className="input" style={{display:'flex',alignItems:'center',color:'#e8e0d0'}}>{p}</div>
@@ -727,13 +842,14 @@ export default function Flip7Tracker() {
             ))}
             <div className="player-row">
               <input
+                ref={playerInputRef}
                 className="input"
-                placeholder="Játékos neve..."
+                placeholder={t.playerNamePlaceholder}
                 value={playerName}
                 onChange={e => setPlayerName(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addPlayer()}
               />
-              <button className="btn" onClick={addPlayer}>+ Add</button>
+              <button className="btn" onClick={addPlayer}>{t.addPlayer}</button>
             </div>
             <hr className="divider" />
             <button
@@ -742,7 +858,7 @@ export default function Flip7Tracker() {
               disabled={players.length < 2}
               onClick={startGame}
             >
-              JÁTÉK INDÍTÁSA →
+              {t.startGame}
             </button>
           </div>
         )}
@@ -758,9 +874,9 @@ export default function Flip7Tracker() {
                 <table>
                   <thead>
                     <tr>
-                      <th className="name-col">Játékos</th>
-                      {rounds.map((_, i) => <th key={i}>{i + 1}. kör</th>)}
-                      <th>Összesen</th>
+                      <th className="name-col">{t.playerCol}</th>
+                      {rounds.map((_, i) => <th key={i}>{t.roundN(i + 1)}</th>)}
+                      <th>{t.total}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -793,19 +909,21 @@ export default function Flip7Tracker() {
                   </tbody>
                 </table>
               </div>
-              {rounds.length === 0 && <div className="empty-state">Még nem volt kör</div>}
+              {rounds.length === 0 && <div className="empty-state">{t.noRounds}</div>}
             </div>
 
             {/* Round entry */}
             <div className="round-panel">
               <div className="round-header">
-                <div className="round-title">{rounds.length + 1}. <span>KÖR</span> bevitele</div>
+                <div className="round-title">
+                  {(() => { const [pre, hi, post] = t.roundTitleParts(rounds.length + 1); return <>{pre}<span>{hi}</span>{post}</>; })()}
+                </div>
                 <div style={{display:'flex',gap:8}}>
                   {rounds.length > 0 && (
-                    <button className="btn btn-sm" onClick={undoRound}>↩ Undo</button>
+                    <button className="btn btn-sm" onClick={undoRound}>{t.undo}</button>
                   )}
-                  <button className="btn btn-sm" onClick={newGame}>↺ Új játék</button>
-                  <button className="btn btn-sm btn-danger" onClick={resetAll}>✕ Reset</button>
+                  <button className="btn btn-sm" onClick={newGame}>{t.newGame}</button>
+                  <button className="btn btn-sm btn-danger" onClick={resetAll}>{t.reset}</button>
                 </div>
               </div>
 
@@ -813,31 +931,31 @@ export default function Flip7Tracker() {
                 {players.map(p => {
                   const e = entry[p] || { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false };
                   const preview = getPreview(p);
-                  const numErr = e.bust ? null : validateNumCards(e.cards);
-                  const plusErr = e.bust ? null : validatePlusCards(e.plusCards);
+                  const numErr = e.bust ? null : validateNumCards(e.cards, t);
+                  const plusErr = e.bust ? null : validatePlusCards(e.plusCards, t);
                   return (
                     <div key={p} className={`player-entry${e.bust ? " is-bust" : e.flip7 ? " is-flip7" : ""}`}>
                       <div className="player-entry-header">
                         <div className="player-entry-name">{p}</div>
-                        <button className="btn-camera" title="Lapok fotózása"
+                        <button className="btn-camera" title="📷"
                           disabled={e.bust || cameraLoading}
                           onClick={() => handleCameraClick(p)}>📷</button>
                       </div>
 
-                      <div className="input-hint">Számkártyák (0–12)</div>
+                      <div className="input-hint">{t.numCardsLabel}</div>
                       <input
                         className={`input cards-input${numErr ? " invalid" : ""}`}
-                        placeholder="pl. 3 7 12 0 5"
+                        placeholder={t.numCardsPlaceholder}
                         value={e.cards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "cards", ev.target.value)}
                       />
                       <div className="input-error">{numErr}</div>
 
-                      <div className="input-hint">+N kártyák (2, 4, 6, 8, 10)</div>
+                      <div className="input-hint">{t.plusCardsLabel}</div>
                       <input
                         className={`input cards-input${plusErr ? " invalid" : ""}`}
-                        placeholder="pl. 2 4"
+                        placeholder={t.plusCardsPlaceholder}
                         value={e.plusCards}
                         disabled={e.bust}
                         onChange={ev => updateEntry(p, "plusCards", ev.target.value)}
@@ -879,7 +997,7 @@ export default function Flip7Tracker() {
               {(() => {
                 const hasErrors = players.some(p => {
                   const e = entry[p] || {};
-                  return !e.bust && (validateNumCards(e.cards) || validatePlusCards(e.plusCards));
+                  return !e.bust && (validateNumCards(e.cards, t) || validatePlusCards(e.plusCards, t));
                 });
                 return (
                   <div className="action-row">
@@ -887,12 +1005,12 @@ export default function Flip7Tracker() {
                       <input
                         className="input"
                         style={{flex:1}}
-                        placeholder="+ Új játékos neve..."
+                        placeholder={t.newPlayerPlaceholder}
                         value={newPlayerName}
                         onChange={e => setNewPlayerName(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
                       />
-                      <button className="btn" onClick={addPlayerInGame}>Hozzáad</button>
+                      <button className="btn" onClick={addPlayerInGame}>{t.addInGame}</button>
                     </div>
                     <button
                       className="btn btn-primary btn-confirm"
@@ -900,7 +1018,7 @@ export default function Flip7Tracker() {
                       disabled={hasErrors}
                       style={hasErrors ? {opacity:0.4, cursor:'not-allowed'} : {}}
                     >
-                      KÖR RÖGZÍTÉSE →
+                      {t.confirmRound}
                     </button>
                   </div>
                 );
@@ -916,8 +1034,8 @@ export default function Flip7Tracker() {
           <div className="dialog-box" onClick={e => e.stopPropagation()}>
             <div className="dialog-msg">{dialog.msg.split('\n').map((l, i) => <div key={i}>{l}</div>)}</div>
             <div className="dialog-btns">
-              <button className="btn" onClick={closeDialog}>Mégse</button>
-              <button className="btn btn-danger" onClick={() => { dialog.onConfirm(); closeDialog(); }}>Igen</button>
+              <button className="btn" onClick={closeDialog}>{t.cancel}</button>
+              <button className="btn btn-danger" onClick={() => { dialog.onConfirm(); closeDialog(); }}>{t.yes}</button>
             </div>
           </div>
         </div>
@@ -926,20 +1044,16 @@ export default function Flip7Tracker() {
       {cameraLoading && (
         <div className="scan-overlay">
           <div className="scan-spinner" />
-          <div className="scan-label">LAPOK FELISMERÉSE...</div>
+          <div className="scan-label">{t.scanning}</div>
         </div>
       )}
 
       {cameraError && (
         <div className="dialog-overlay" onClick={() => setCameraError(null)}>
           <div className="dialog-box" onClick={e => e.stopPropagation()}>
-            <div className="dialog-msg">
-              {cameraError === 'no_cards_detected'
-                ? 'Nem sikerült lapokat felismerni a képen. Kérlek töltsd ki manuálisan.'
-                : cameraError}
-            </div>
+            <div className="dialog-msg">{cameraErrorMsg}</div>
             <div className="dialog-btns">
-              <button className="btn btn-primary" onClick={() => setCameraError(null)}>OK</button>
+              <button className="btn btn-primary" onClick={() => setCameraError(null)}>{t.ok}</button>
             </div>
           </div>
         </div>
@@ -950,13 +1064,11 @@ export default function Flip7Tracker() {
           <div className="dialog-box" onClick={e => e.stopPropagation()}>
             <div className="dialog-msg">
               <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:3,color:'#f5c842',marginBottom:12}}>
-                CLAUDE API KULCS
+                {t.apiKeyTitle}
               </div>
-              <div style={{fontSize:11,color:'#556',marginBottom:14}}>
-                A lapfelismeréshez szükséges. Csak egyszer kell megadni, az app elmenti.
-              </div>
+              <div style={{fontSize:11,color:'#556',marginBottom:14}}>{t.apiKeyDesc}</div>
               <input className="input" style={{width:'100%',fontSize:12}}
-                placeholder="sk-ant-api03-..."
+                placeholder={t.apiKeyPlaceholder}
                 value={apiKeyDraft}
                 onChange={e => setApiKeyDraft(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveApiKey()}
@@ -964,9 +1076,9 @@ export default function Flip7Tracker() {
               />
             </div>
             <div className="dialog-btns">
-              <button className="btn" onClick={() => setApiKeyModal(false)}>Mégse</button>
+              <button className="btn" onClick={() => setApiKeyModal(false)}>{t.cancel}</button>
               <button className="btn btn-primary" onClick={saveApiKey}
-                disabled={!apiKeyDraft.trim()}>Mentés →</button>
+                disabled={!apiKeyDraft.trim()}>{t.save}</button>
             </div>
           </div>
         </div>
