@@ -530,8 +530,9 @@ function validatePlusCards(str, t) {
 
 function calcScore(cards, bust, flip7, plusCards, multiplier) {
   if (bust) return 0;
-  const base = (cards.reduce((a,b)=>a+b,0) + plusCards.reduce((a,b)=>a+b,0)) * (multiplier ? 2 : 1);
-  return base + (flip7 ? FLIP7_BONUS : 0);
+  const numSum  = cards.reduce((a,b)=>a+b,0) * (multiplier ? 2 : 1);
+  const plusSum = plusCards.reduce((a,b)=>a+b,0);
+  return numSum + plusSum + (flip7 ? FLIP7_BONUS : 0);
 }
 
 function getRank(players, totals) {
