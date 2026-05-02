@@ -695,9 +695,15 @@ export default function Flip7Tracker() {
   const removePlayer = (n) => setPlayers(players.filter(p => p !== n));
 
   const startGame = () => {
-    if (players.length < 2) return;
+    const pending = playerName.trim();
+    const finalPlayers = pending && !players.includes(pending) ? [...players, pending] : players;
+    if (finalPlayers.length < 2) return;
+    if (pending && !players.includes(pending)) {
+      setPlayers(finalPlayers);
+      setPlayerName("");
+    }
     const init = {};
-    players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
+    finalPlayers.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
     setEntry(init); setPhase("game");
   };
 
