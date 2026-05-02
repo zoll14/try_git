@@ -498,26 +498,64 @@ public class GameView extends SurfaceView
 
     private void drawDpad(Canvas c) {
         if (!dpadVisible) return;
-        float w = getWidth();
-        float cx = w / 2f;
+        float cx = getWidth() / 2f;
         float cy = dpadY + dpadSize / 2f;
-        float btn = dpadSize / 3f;
+        float arm = dpadSize * 0.175f;
+        float tip = dpadSize * 0.475f;
+        float cr  = arm * 0.55f;
 
-        drawDpadButton(c, cx, cy - btn, btn, dpadUpPressed, "\u25B2");    // ▲
-        drawDpadButton(c, cx, cy + btn, btn, dpadDownPressed, "\u25BC");  // ▼
-        drawDpadButton(c, cx - btn, cy, btn, dpadLeftPressed, "\u25C4");  // ◄
-        drawDpadButton(c, cx + btn, cy, btn, dpadRightPressed, "\u25BA"); // ►
-        // center circle
-        c.drawCircle(cx, cy, btn * 0.35f, dpadPaint);
+        Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        fill.setStyle(Paint.Style.FILL);
+
+        fill.setColor(dpadUpPressed    ? 0xAAFFFFFF : 0x50FFFFFF);
+        c.drawRoundRect(new RectF(cx - arm, cy - tip,         cx + arm, cy + arm * 0.15f), cr, cr, fill);
+        fill.setColor(dpadDownPressed  ? 0xAAFFFFFF : 0x50FFFFFF);
+        c.drawRoundRect(new RectF(cx - arm, cy - arm * 0.15f, cx + arm, cy + tip),         cr, cr, fill);
+        fill.setColor(dpadLeftPressed  ? 0xAAFFFFFF : 0x50FFFFFF);
+        c.drawRoundRect(new RectF(cx - tip, cy - arm,         cx + arm * 0.15f, cy + arm), cr, cr, fill);
+        fill.setColor(dpadRightPressed ? 0xAAFFFFFF : 0x50FFFFFF);
+        c.drawRoundRect(new RectF(cx - arm * 0.15f, cy - arm, cx + tip, cy + arm),         cr, cr, fill);
+
+        fill.setColor(0x30FFFFFF);
+        c.drawCircle(cx, cy, arm * 0.85f, fill);
+
+        float mid = tip * 0.60f;
+        float as  = arm * 0.68f;
+        drawDpadArrow(c, cx,       cy - mid, as, 0);
+        drawDpadArrow(c, cx,       cy + mid, as, 1);
+        drawDpadArrow(c, cx - mid, cy,       as, 2);
+        drawDpadArrow(c, cx + mid, cy,       as, 3);
     }
 
-    private void drawDpadButton(Canvas c, float cx, float cy, float size, boolean pressed, String arrow) {
-        Paint bg = pressed ? dpadPressedPaint : dpadPaint;
-        c.drawCircle(cx, cy, size * 0.45f, bg);
-        hudPaint.setTextSize(size * 0.5f);
-        hudPaint.setColor(Color.WHITE);
-        float tw = hudPaint.measureText(arrow);
-        c.drawText(arrow, cx - tw / 2f, cy + size * 0.18f, hudPaint);
+    private void drawDpadArrow(Canvas c, float cx, float cy, float s, int dir) {
+        Path p = new Path();
+        switch (dir) {
+            case 0:
+                p.moveTo(cx,             cy - s);
+                p.lineTo(cx + s,         cy + s * 0.58f);
+                p.lineTo(cx - s,         cy + s * 0.58f);
+                break;
+            case 1:
+                p.moveTo(cx,             cy + s);
+                p.lineTo(cx + s,         cy - s * 0.58f);
+                p.lineTo(cx - s,         cy - s * 0.58f);
+                break;
+            case 2:
+                p.moveTo(cx - s,         cy);
+                p.lineTo(cx + s * 0.58f, cy - s);
+                p.lineTo(cx + s * 0.58f, cy + s);
+                break;
+            default:
+                p.moveTo(cx + s,         cy);
+                p.lineTo(cx - s * 0.58f, cy - s);
+                p.lineTo(cx - s * 0.58f, cy + s);
+                break;
+        }
+        p.close();
+        Paint ap = new Paint(Paint.ANTI_ALIAS_FLAG);
+        ap.setColor(0xDDFFFFFF);
+        ap.setStyle(Paint.Style.FILL);
+        c.drawPath(p, ap);
     }
 
     private void drawOverlay(Canvas c) {
@@ -806,16 +844,14 @@ public class GameView extends SurfaceView
     }
 
     private boolean handleDpadTouch(MotionEvent ev) {
-        float w = getWidth();
-        float cx = w / 2f;
+        float cx = getWidth() / 2f;
         float cy = dpadY + dpadSize / 2f;
-        float btn = dpadSize / 3f;
-        float touchRadius = btn * 0.5f;
+        float half = dpadSize / 2f;
 
         float tx = ev.getX();
         float ty = ev.getY();
 
-        boolean inDpad = Math.abs(tx - cx) < dpadSize / 2f && ty > dpadY && ty < dpadY + dpadSize;
+        boolean inDpad = Math.abs(tx - cx) < half && Math.abs(ty - cy) < half;
         if (!inDpad) {
             if (ev.getAction() == MotionEvent.ACTION_UP) resetDpad();
             return false;
@@ -827,12 +863,15 @@ public class GameView extends SurfaceView
         }
 
         resetDpad();
-        // Determine which button was pressed
-        if (dist(tx, ty, cx, cy - btn) < touchRadius * 1.5f) { dpadUpPressed = true; }
-        else if (dist(tx, ty, cx, cy + btn) < touchRadius * 1.5f) { dpadDownPressed = true; }
-        else if (dist(tx, ty, cx - btn, cy) < touchRadius * 1.5f) { dpadLeftPressed = true; }
-        else if (dist(tx, ty, cx + btn, cy) < touchRadius * 1.5f) { dpadRightPressed = true; }
-
+        float dx = tx - cx;
+        float dy = ty - cy;
+        if (Math.abs(dy) >= Math.abs(dx)) {
+            if (dy < 0) dpadUpPressed = true;
+            else        dpadDownPressed = true;
+        } else {
+            if (dx < 0) dpadLeftPressed = true;
+            else        dpadRightPressed = true;
+        }
         return true;
     }
 
