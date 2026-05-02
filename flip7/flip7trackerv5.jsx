@@ -808,7 +808,8 @@ export default function Flip7Tracker() {
             </div>
             <hr className="divider" />
             <button className="btn btn-primary" style={{width:'100%',padding:'12px'}}
-              disabled={players.length < 2} onClick={startGame}>{t.startGame}</button>
+              disabled={players.length + (playerName.trim() && !players.includes(playerName.trim()) ? 1 : 0) < 2}
+              onClick={startGame}>{t.startGame}</button>
           </div>
         )}
 
