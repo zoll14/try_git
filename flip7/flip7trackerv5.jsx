@@ -84,16 +84,79 @@ const styles = `
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ── Theme variables ── */
+  :root {
+    --bg:        #0d1117;
+    --bg-2:      #161b22;
+    --bg-3:      #1e2530;
+    --bg-4:      #1a2030;
+    --bg-overlay: rgba(0,0,0,0.72);
+    --bg-scan:   rgba(13,17,23,0.94);
+    --border:    #2a3040;
+    --border-2:  #556;
+    --text:      #e8e0d0;
+    --text-2:    #778;
+    --text-3:    #445;
+    --text-4:    #334;
+    --accent:    #f5c842;
+    --accent-h:  #ffd84a;
+    --accent-on: #0d1117;
+    --danger:    #ee0055;
+    --danger-a:  rgba(238,0,85,0.08);
+    --danger-b:  rgba(238,0,85,0.15);
+    --danger-c:  rgba(238,0,85,0.3);
+    --flip-a:    rgba(245,200,66,0.15);
+    --flip-b:    rgba(245,200,66,0.4);
+    --info:      #44aaff;
+    --info-a:    rgba(68,170,255,0.12);
+    --score:     #aab;
+    --logo-glow: rgba(245,200,66,0.3);
+    --grad-1:    #1a2a1a;
+    --grad-2:    #0d1117;
+  }
+
+  .light-mode {
+    --bg:        #f4f1ec;
+    --bg-2:      #ffffff;
+    --bg-3:      #ece8e0;
+    --bg-4:      #e4e0d8;
+    --bg-overlay: rgba(30,20,10,0.45);
+    --bg-scan:   rgba(244,241,236,0.96);
+    --border:    #ccc8be;
+    --border-2:  #888;
+    --text:      #1c1a16;
+    --text-2:    #6a6560;
+    --text-3:    #8c887e;
+    --text-4:    #aaa89e;
+    --accent:    #a07800;
+    --accent-h:  #8c6800;
+    --accent-on: #ffffff;
+    --danger:    #cc0044;
+    --danger-a:  rgba(204,0,68,0.07);
+    --danger-b:  rgba(204,0,68,0.12);
+    --danger-c:  rgba(204,0,68,0.22);
+    --flip-a:    rgba(160,120,0,0.12);
+    --flip-b:    rgba(160,120,0,0.28);
+    --info:      #0077cc;
+    --info-a:    rgba(0,119,204,0.1);
+    --score:     #888;
+    --logo-glow: rgba(160,120,0,0.22);
+    --grad-1:    #e8ede8;
+    --grad-2:    #f4f1ec;
+  }
+
   body {
-    background: #0d1117;
+    background: var(--bg);
     font-family: 'DM Mono', monospace;
+    transition: background 0.2s;
   }
 
   .app {
     min-height: 100vh;
-    background: radial-gradient(ellipse at 20% 0%, #1a2a1a 0%, #0d1117 60%);
-    color: #e8e0d0;
+    background: radial-gradient(ellipse at 20% 0%, var(--grad-1) 0%, var(--grad-2) 60%);
+    color: var(--text);
     padding: 24px 16px 48px;
+    transition: background 0.2s, color 0.2s;
   }
 
   .header {
@@ -105,35 +168,40 @@ const styles = `
     font-family: 'Bebas Neue', sans-serif;
     font-size: 52px;
     letter-spacing: 6px;
-    color: #f5c842;
-    text-shadow: 0 0 30px rgba(245,200,66,0.3);
+    color: var(--accent);
+    text-shadow: 0 0 30px var(--logo-glow);
     line-height: 1;
   }
 
-  .logo span {
-    color: #fff;
-  }
+  .logo span { color: var(--text); }
 
   .subtitle {
     font-size: 11px;
     letter-spacing: 3px;
-    color: #556;
+    color: var(--text-2);
     margin-top: 4px;
     text-transform: uppercase;
   }
 
-  .lang-switcher {
+  .header-controls {
     display: flex;
     gap: 6px;
     justify-content: center;
+    align-items: center;
     margin-top: 10px;
   }
 
-  .lang-btn {
+  .ctrl-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--border);
+  }
+
+  .ctrl-btn {
     background: none;
-    border: 1px solid #2a3040;
+    border: 1px solid var(--border);
     border-radius: 4px;
-    color: #445;
+    color: var(--text-3);
     font-family: 'DM Mono', monospace;
     font-size: 11px;
     letter-spacing: 2px;
@@ -142,27 +210,24 @@ const styles = `
     transition: all 0.15s;
   }
 
-  .lang-btn.lang-active {
-    border-color: #f5c842;
-    color: #f5c842;
+  .ctrl-btn:hover { border-color: var(--border-2); color: var(--text-2); }
+
+  .ctrl-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
-  .lang-btn:hover {
-    border-color: #556;
-    color: #778;
-  }
-
-  .lang-btn.lang-active:hover {
-    border-color: #f5c842;
-    color: #f5c842;
+  .ctrl-btn.active:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   /* Setup */
   .setup-card {
     max-width: 420px;
     margin: 0 auto;
-    background: #161b22;
-    border: 1px solid #2a3040;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 28px;
   }
@@ -171,7 +236,7 @@ const styles = `
     font-family: 'Bebas Neue', sans-serif;
     font-size: 22px;
     letter-spacing: 3px;
-    color: #f5c842;
+    color: var(--accent);
     margin-bottom: 20px;
   }
 
@@ -182,10 +247,10 @@ const styles = `
   }
 
   .input {
-    background: #0d1117;
-    border: 1px solid #2a3040;
+    background: var(--bg);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: #e8e0d0;
+    color: var(--text);
     font-family: 'DM Mono', monospace;
     font-size: 14px;
     padding: 8px 12px;
@@ -194,14 +259,14 @@ const styles = `
     transition: border-color 0.15s;
   }
 
-  .input:focus { border-color: #f5c842; }
-  .input::placeholder { color: #334; }
+  .input:focus { border-color: var(--accent); }
+  .input::placeholder { color: var(--text-4); }
 
   .btn {
     background: none;
-    border: 1px solid #2a3040;
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: #e8e0d0;
+    color: var(--text);
     font-family: 'DM Mono', monospace;
     font-size: 13px;
     padding: 8px 14px;
@@ -210,18 +275,18 @@ const styles = `
     white-space: nowrap;
   }
 
-  .btn:hover { border-color: #556; background: #1e2530; }
+  .btn:hover { border-color: var(--border-2); background: var(--bg-3); }
 
   .btn-primary {
-    background: #f5c842;
-    border-color: #f5c842;
-    color: #0d1117;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-on);
     font-weight: 500;
   }
-  .btn-primary:hover { background: #ffd84a; border-color: #ffd84a; }
+  .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
 
-  .btn-danger { border-color: #e05; color: #e05; }
-  .btn-danger:hover { background: rgba(238,0,85,0.1); }
+  .btn-danger { border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger-a); }
 
   .btn-sm { padding: 5px 10px; font-size: 12px; }
 
@@ -236,8 +301,8 @@ const styles = `
 
   /* Scoreboard */
   .scoreboard {
-    background: #161b22;
-    border: 1px solid #2a3040;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -251,14 +316,14 @@ const styles = `
   }
 
   th {
-    background: #1e2530;
+    background: var(--bg-3);
     padding: 10px 14px;
     text-align: center;
     font-size: 10px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #778;
-    border-bottom: 1px solid #2a3040;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border);
     white-space: nowrap;
   }
 
@@ -270,41 +335,53 @@ const styles = `
     z-index: 2;
   }
 
-  th.name-col { background: #1e2530; }
-  td.name-col { background: #161b22; }
-  tr:hover td.name-col { background: #1a2030; }
-  .total-row td.name-col { background: #1e2530 !important; }
+  th.name-col { background: var(--bg-3); }
+  td.name-col { background: var(--bg-2); }
+  tr:hover td.name-col { background: var(--bg-4); }
+  .total-row td.name-col { background: var(--bg-3) !important; }
 
   td {
     padding: 9px 14px;
     text-align: center;
-    border-bottom: 1px solid #1a2030;
+    border-bottom: 1px solid var(--bg-4);
     white-space: nowrap;
   }
 
   td.name-col {
     text-align: left;
     font-size: 14px;
-    color: #e8e0d0;
+    color: var(--text);
   }
 
   tr:last-child td { border-bottom: none; }
 
-  .score-cell { color: #aab; }
-  .round-score { color: #e8e0d0; }
-  .bust-cell { color: #e05; font-size: 11px; letter-spacing: 1px; }
-  .flip7-cell { color: #f5c842; font-size: 11px; letter-spacing: 1px; }
+  .score-cell  { color: var(--score); }
+  .round-score { color: var(--text); }
+  .bust-cell   { color: var(--danger); font-size: 11px; letter-spacing: 1px; }
+  .flip7-cell  { color: var(--accent); font-size: 11px; letter-spacing: 1px; }
 
   .total-row td {
-    background: #1e2530;
+    background: var(--bg-3);
     font-family: 'Bebas Neue', sans-serif;
     font-size: 18px;
     letter-spacing: 1px;
-    color: #f5c842;
-    border-top: 2px solid #2a3040;
+    color: var(--accent);
+    border-top: 2px solid var(--border);
   }
 
-  .total-row td.name-col { color: #e8e0d0; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+  .total-row td.name-col {
+    color: var(--text);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .total-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
 
   .rank-badge {
     display: inline-block;
@@ -319,13 +396,13 @@ const styles = `
   }
 
   .rank-1 { background: #f5c842; color: #0d1117; }
-  .rank-2 { background: #aaa; color: #0d1117; }
+  .rank-2 { background: #aaa;    color: #0d1117; }
   .rank-3 { background: #cd7f32; color: #0d1117; }
 
   /* Round entry */
   .round-panel {
-    background: #161b22;
-    border: 1px solid #2a3040;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 24px;
   }
@@ -343,11 +420,11 @@ const styles = `
     font-family: 'Bebas Neue', sans-serif;
     font-size: 22px;
     letter-spacing: 3px;
-    color: #e8e0d0;
+    color: var(--text);
     flex-shrink: 0;
   }
 
-  .round-title span { color: #f5c842; }
+  .round-title span { color: var(--accent); }
 
   .players-grid {
     display: grid;
@@ -357,15 +434,15 @@ const styles = `
   }
 
   .player-entry {
-    background: #0d1117;
-    border: 1px solid #2a3040;
+    background: var(--bg);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 14px;
     transition: border-color 0.15s;
   }
 
-  .player-entry.is-bust { border-color: rgba(238,0,85,0.3); }
-  .player-entry.is-flip7 { border-color: rgba(245,200,66,0.4); }
+  .player-entry.is-bust  { border-color: var(--danger-c); }
+  .player-entry.is-flip7 { border-color: var(--flip-b); }
 
   .player-entry-header {
     display: flex;
@@ -378,47 +455,32 @@ const styles = `
     font-size: 12px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #778;
+    color: var(--text-2);
   }
 
   .btn-camera {
     background: none;
-    border: 1px solid #2a3040;
+    border: 1px solid var(--border);
     border-radius: 4px;
-    color: #667;
+    color: var(--text-3);
     font-size: 15px;
     padding: 2px 8px;
     cursor: pointer;
     line-height: 1.5;
     transition: all 0.15s;
   }
-  .btn-camera:hover { border-color: #778; color: #aab; background: #1e2530; }
+  .btn-camera:hover    { border-color: var(--border-2); color: var(--text-2); background: var(--bg-3); }
   .btn-camera:disabled { opacity: 0.25; cursor: not-allowed; }
 
-  .cards-input {
-    width: 100%;
-    margin-bottom: 4px;
-  }
+  .cards-input { width: 100%; margin-bottom: 4px; }
 
-  .input-hint {
-    font-size: 10px;
-    color: #445;
-    margin-bottom: 6px;
-  }
+  .input-hint  { font-size: 10px; color: var(--text-3); margin-bottom: 6px; }
 
-  .input-error {
-    font-size: 10px;
-    color: #e05;
-    margin-bottom: 8px;
-    min-height: 14px;
-  }
+  .input-error { font-size: 10px; color: var(--danger); margin-bottom: 8px; min-height: 14px; }
 
-  .input.invalid { border-color: #e05; }
+  .input.invalid { border-color: var(--danger); }
 
-  .toggle-row {
-    display: flex;
-    gap: 6px;
-  }
+  .toggle-row { display: flex; gap: 6px; }
 
   .toggle-btn {
     flex: 1;
@@ -427,41 +489,54 @@ const styles = `
     letter-spacing: 1px;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #2a3040;
+    border: 1px solid var(--border);
     background: none;
-    color: #778;
+    color: var(--text-2);
     font-family: 'DM Mono', monospace;
     transition: all 0.15s;
   }
 
   .toggle-btn.active-bust {
-    background: rgba(238,0,85,0.15);
-    border-color: #e05;
-    color: #e05;
+    background: var(--danger-b);
+    border-color: var(--danger);
+    color: var(--danger);
   }
 
   .toggle-btn.active-flip7 {
-    background: rgba(245,200,66,0.15);
-    border-color: #f5c842;
-    color: #f5c842;
+    background: var(--flip-a);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .toggle-btn.active-x2 {
+    background: var(--info-a);
+    border-color: var(--info);
+    color: var(--info);
   }
 
   .preview-score {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 28px;
-    color: #f5c842;
+    color: var(--accent);
     margin-top: 8px;
     letter-spacing: 2px;
   }
 
-  .preview-score.bust { color: #e05; }
+  .preview-score.bust { color: var(--danger); }
+
+  .preview-detail {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-left: 8px;
+    font-family: 'DM Mono', monospace;
+  }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .scan-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(13,17,23,0.94);
+    background: var(--bg-scan);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -473,8 +548,8 @@ const styles = `
   .scan-spinner {
     width: 44px;
     height: 44px;
-    border: 3px solid #2a3040;
-    border-top-color: #f5c842;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
@@ -483,20 +558,11 @@ const styles = `
     font-family: 'Bebas Neue', sans-serif;
     font-size: 18px;
     letter-spacing: 4px;
-    color: #f5c842;
+    color: var(--accent);
   }
 
-  .action-row {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 4px;
-  }
-
-  .action-add-row {
-    display: flex;
-    gap: 10px;
-  }
+  .action-row     { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .action-add-row { display: flex; gap: 10px; }
 
   .btn-confirm {
     width: 100%;
@@ -507,23 +573,23 @@ const styles = `
 
   .divider {
     border: none;
-    border-top: 1px solid #1e2530;
+    border-top: 1px solid var(--bg-3);
     margin: 16px 0;
   }
 
   .empty-state {
     text-align: center;
     padding: 40px;
-    color: #334;
+    color: var(--text-4);
     font-size: 13px;
     letter-spacing: 1px;
   }
 
-  /* Confirm dialog */
+  /* Dialog */
   .dialog-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: var(--bg-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -532,26 +598,25 @@ const styles = `
   }
 
   .dialog-box {
-    background: #161b22;
-    border: 1px solid #2a3040;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 28px 24px 20px;
     max-width: 320px;
     width: 100%;
   }
 
-  .dialog-msg {
-    font-size: 14px;
-    color: #e8e0d0;
-    line-height: 1.6;
-    margin-bottom: 20px;
+  .dialog-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
   }
 
-  .dialog-btns {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
+  .dialog-msg  { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 20px; }
+  .dialog-desc { font-size: 11px; color: var(--text-3); margin-bottom: 14px; }
+  .dialog-btns { display: flex; gap: 10px; justify-content: flex-end; }
 `;
 
 function parseCards(str) {
@@ -613,38 +678,38 @@ function resizeImage(file, maxPx = 1024) {
 }
 
 export default function Flip7Tracker() {
-  const [lang, setLang] = useState(() => localStorage.getItem('flip7_lang') || 'hu');
+  const [lang,  setLang]  = useState(() => localStorage.getItem('flip7_lang')  || 'hu');
+  const [theme, setTheme] = useState(() => localStorage.getItem('flip7_theme') || 'dark');
   const [phase, setPhase] = useState("setup");
   const [playerName, setPlayerName] = useState("");
   const [players, setPlayers] = useState([]);
-  const [rounds, setRounds] = useState([]);
-  const [entry, setEntry] = useState({});
+  const [rounds,  setRounds]  = useState([]);
+  const [entry,   setEntry]   = useState({});
   const [newPlayerName, setNewPlayerName] = useState("");
-  const [dialog, setDialog] = useState(null);
+  const [dialog,      setDialog]      = useState(null);
   const [cameraLoading, setCameraLoading] = useState(false);
-  const [cameraError, setCameraError] = useState(null);
+  const [cameraError,   setCameraError]   = useState(null);
   const [apiKeyModal, setApiKeyModal] = useState(false);
   const [apiKeyDraft, setApiKeyDraft] = useState("");
-  const fileInputRef = useRef(null);
+  const fileInputRef    = useRef(null);
   const pendingPlayerRef = useRef(null);
-  const playerInputRef = useRef(null);
+  const playerInputRef  = useRef(null);
 
   const t = TRANSLATIONS[lang];
 
+  useEffect(() => { localStorage.setItem('flip7_lang', lang); }, [lang]);
+
   useEffect(() => {
-    localStorage.setItem('flip7_lang', lang);
-  }, [lang]);
+    localStorage.setItem('flip7_theme', theme);
+    document.body.className = theme === 'light' ? 'light-mode' : '';
+  }, [theme]);
 
   const showConfirm = (msg, onConfirm) => setDialog({ msg, onConfirm });
   const closeDialog = () => setDialog(null);
 
   const handleCameraClick = (playerName) => {
     const key = localStorage.getItem('flip7_claude_key');
-    if (!key) {
-      pendingPlayerRef.current = playerName;
-      setApiKeyModal(true);
-      return;
-    }
+    if (!key) { pendingPlayerRef.current = playerName; setApiKeyModal(true); return; }
     pendingPlayerRef.current = playerName;
     fileInputRef.current.value = '';
     fileInputRef.current.click();
@@ -654,8 +719,7 @@ export default function Flip7Tracker() {
     const k = apiKeyDraft.trim();
     if (!k) return;
     localStorage.setItem('flip7_claude_key', k);
-    setApiKeyDraft('');
-    setApiKeyModal(false);
+    setApiKeyDraft(''); setApiKeyModal(false);
     setTimeout(() => { fileInputRef.current.value = ''; fileInputRef.current.click(); }, 100);
   };
 
@@ -672,8 +736,7 @@ export default function Flip7Tracker() {
       const mimeType = dataUrl.slice(0, comma).match(/:(.*?);/)[1];
       const base64Data = dataUrl.slice(comma + 1);
       const requestBody = JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
+        model: 'claude-haiku-4-5-20251001', max_tokens: 300,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Data } },
           { type: 'text', text: 'Flip 7 kártyajáték lapokat azonosítasz a képen. Számkártyák: 0-12 közötti egész számok. Plusz kártyák: +2, +4, +6, +8 vagy +10 (+ jellel jelölve). Válaszolj CSAK JSON-ban: {"numberCards":[egész számok 0-12],"plusCards":[2/4/6/8/10 értékek]}. Ha nem látszanak lapok: {"error":"no_cards_detected"}' }
@@ -683,32 +746,20 @@ export default function Flip7Tracker() {
         setCameraLoading(false);
         try {
           const resp = JSON.parse(raw);
-          if (resp.error && typeof resp.error === 'object') {
-            setCameraError('api_error:' + (resp.error.message || '?'));
-            return;
-          }
+          if (resp.error && typeof resp.error === 'object') { setCameraError('api_error:' + (resp.error.message || '?')); return; }
           const text = resp.content?.[0]?.text ?? '';
           const m = text.match(/\{[\s\S]*\}/);
           if (!m) { setCameraError('no_cards_detected'); return; }
           const cards = JSON.parse(m[0]);
           if (cards.error === 'no_cards_detected') { setCameraError('no_cards_detected'); return; }
           if (cards.numberCards?.length) updateEntry(player, 'cards', cards.numberCards.join(' '));
-          if (cards.plusCards?.length) updateEntry(player, 'plusCards', cards.plusCards.join(' '));
+          if (cards.plusCards?.length)   updateEntry(player, 'plusCards', cards.plusCards.join(' '));
           if (!cards.numberCards?.length && !cards.plusCards?.length) setCameraError('no_cards_detected');
-        } catch (e) {
-          setCameraError('processing_error');
-        }
+        } catch { setCameraError('processing_error'); }
       };
-      if (window.Android) {
-        window.Android.analyzeImage(apiKey, requestBody);
-      } else {
-        setCameraLoading(false);
-        setCameraError('android_unavail');
-      }
-    } catch (e) {
-      setCameraLoading(false);
-      setCameraError('processing_error');
-    }
+      if (window.Android) { window.Android.analyzeImage(apiKey, requestBody); }
+      else { setCameraLoading(false); setCameraError('android_unavail'); }
+    } catch { setCameraLoading(false); setCameraError('processing_error'); }
   };
 
   const addPlayerInGame = () => {
@@ -734,8 +785,7 @@ export default function Flip7Tracker() {
     if (players.length < 2) return;
     const init = {};
     players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
-    setEntry(init);
-    setPhase("game");
+    setEntry(init); setPhase("game");
   };
 
   const updateEntry = (name, field, value) => {
@@ -744,14 +794,12 @@ export default function Flip7Tracker() {
 
   const toggleBust = (name) => {
     const cur = entry[name];
-    if (!cur.bust) updateEntry(name, "bust", true);
-    else updateEntry(name, "bust", false);
+    if (!cur.bust) updateEntry(name, "bust", true); else updateEntry(name, "bust", false);
     if (!entry[name].bust) updateEntry(name, "flip7", false);
   };
 
   const toggleFlip7 = (name) => {
-    const cur = entry[name];
-    if (!cur.flip7) { updateEntry(name, "flip7", true); updateEntry(name, "bust", false); }
+    if (!entry[name].flip7) { updateEntry(name, "flip7", true); updateEntry(name, "bust", false); }
     else updateEntry(name, "flip7", false);
   };
 
@@ -759,14 +807,8 @@ export default function Flip7Tracker() {
     const roundResult = {};
     players.forEach(p => {
       const e = entry[p];
-      const cards = parseCards(e.cards);
-      const plusCards = parseCards(e.plusCards);
-      roundResult[p] = {
-        score: calcScore(cards, e.bust, e.flip7, plusCards, e.multiplier),
-        bust: e.bust,
-        flip7: e.flip7,
-        multiplier: e.multiplier,
-      };
+      const cards = parseCards(e.cards), plusCards = parseCards(e.plusCards);
+      roundResult[p] = { score: calcScore(cards, e.bust, e.flip7, plusCards, e.multiplier), bust: e.bust, flip7: e.flip7, multiplier: e.multiplier };
     });
     setRounds([...rounds, roundResult]);
     const init = {};
@@ -776,46 +818,34 @@ export default function Flip7Tracker() {
 
   const undoRound = () => setRounds(rounds.slice(0, -1));
 
-  const resetAll = () => {
-    showConfirm(t.resetConfirm, () => {
-      setPlayers([]);
-      setRounds([]);
-      setEntry({});
-      setPlayerName("");
-      setPhase("setup");
-    });
-  };
+  const resetAll = () => showConfirm(t.resetConfirm, () => {
+    setPlayers([]); setRounds([]); setEntry({}); setPlayerName(""); setPhase("setup");
+  });
 
-  const newGame = () => {
-    showConfirm(t.newGameConfirm, () => {
-      setRounds([]);
-      const init = {};
-      players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
-      setEntry(init);
-    });
-  };
+  const newGame = () => showConfirm(t.newGameConfirm, () => {
+    setRounds([]);
+    const init = {};
+    players.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
+    setEntry(init);
+  });
 
   const totals = {};
-  players.forEach(p => {
-    totals[p] = rounds.reduce((sum, r) => sum + (r[p]?.score || 0), 0);
-  });
+  players.forEach(p => { totals[p] = rounds.reduce((sum, r) => sum + (r[p]?.score || 0), 0); });
 
   const getPreview = (name) => {
     if (!entry[name]) return null;
     const e = entry[name];
     if (e.bust) return { score: 0 };
-    const cards = parseCards(e.cards);
-    const plusCards = parseCards(e.plusCards);
-    const score = calcScore(cards, false, e.flip7, plusCards, e.multiplier);
-    return { score };
+    return { score: calcScore(parseCards(e.cards), false, e.flip7, parseCards(e.plusCards), e.multiplier) };
   };
 
   const rankOf = getRank(players, totals);
 
-  const cameraErrorMsg = cameraError === 'no_cards_detected' ? t.noCardsDetected
-    : cameraError === 'processing_error' ? t.processingError
-    : cameraError === 'android_unavail' ? t.androidUnavail
-    : cameraError?.startsWith('api_error:') ? t.apiError(cameraError.slice(10))
+  const cameraErrorMsg =
+    cameraError === 'no_cards_detected'            ? t.noCardsDetected
+    : cameraError === 'processing_error'           ? t.processingError
+    : cameraError === 'android_unavail'            ? t.androidUnavail
+    : cameraError?.startsWith('api_error:')        ? t.apiError(cameraError.slice(10))
     : cameraError;
 
   return (
@@ -825,9 +855,12 @@ export default function Flip7Tracker() {
         <div className="header">
           <div className="logo">FLIP<span> 7</span></div>
           <div className="subtitle">Score Tracker</div>
-          <div className="lang-switcher">
-            <button className={`lang-btn${lang === 'hu' ? ' lang-active' : ''}`} onClick={() => setLang('hu')}>HU</button>
-            <button className={`lang-btn${lang === 'en' ? ' lang-active' : ''}`} onClick={() => setLang('en')}>EN</button>
+          <div className="header-controls">
+            <button className={`ctrl-btn${lang === 'hu' ? ' active' : ''}`} onClick={() => setLang('hu')}>HU</button>
+            <button className={`ctrl-btn${lang === 'en' ? ' active' : ''}`} onClick={() => setLang('en')}>EN</button>
+            <div className="ctrl-divider" />
+            <button className={`ctrl-btn${theme === 'dark'  ? ' active' : ''}`} onClick={() => setTheme('dark')}>☾</button>
+            <button className={`ctrl-btn${theme === 'light' ? ' active' : ''}`} onClick={() => setTheme('light')}>☀</button>
           </div>
         </div>
 
@@ -836,30 +869,20 @@ export default function Flip7Tracker() {
             <div className="setup-title">{t.setupTitle}</div>
             {players.map(p => (
               <div key={p} className="player-row">
-                <div className="input" style={{display:'flex',alignItems:'center',color:'#e8e0d0'}}>{p}</div>
+                <div className="input" style={{display:'flex',alignItems:'center'}}>{p}</div>
                 <button className="btn btn-danger btn-sm" onClick={() => removePlayer(p)}>✕</button>
               </div>
             ))}
             <div className="player-row">
-              <input
-                ref={playerInputRef}
-                className="input"
-                placeholder={t.playerNamePlaceholder}
-                value={playerName}
+              <input ref={playerInputRef} className="input"
+                placeholder={t.playerNamePlaceholder} value={playerName}
                 onChange={e => setPlayerName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addPlayer()}
-              />
+                onKeyDown={e => e.key === "Enter" && addPlayer()} />
               <button className="btn" onClick={addPlayer}>{t.addPlayer}</button>
             </div>
             <hr className="divider" />
-            <button
-              className="btn btn-primary"
-              style={{width:'100%',padding:'12px'}}
-              disabled={players.length < 2}
-              onClick={startGame}
-            >
-              {t.startGame}
-            </button>
+            <button className="btn btn-primary" style={{width:'100%',padding:'12px'}}
+              disabled={players.length < 2} onClick={startGame}>{t.startGame}</button>
           </div>
         )}
 
@@ -885,9 +908,7 @@ export default function Flip7Tracker() {
                       return (
                         <tr key={p}>
                           <td className="name-col">
-                            {rank <= 3 && rounds.length > 0 && (
-                              <span className={`rank-badge rank-${rank}`}>{rank}</span>
-                            )}
+                            {rank <= 3 && rounds.length > 0 && <span className={`rank-badge rank-${rank}`}>{rank}</span>}
                             {p}
                           </td>
                           {rounds.map((r, i) => {
@@ -900,9 +921,7 @@ export default function Flip7Tracker() {
                               </td>
                             );
                           })}
-                          <td style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,color:'#f5c842',letterSpacing:1}}>
-                            {totals[p]}
-                          </td>
+                          <td><span className="total-score">{totals[p]}</span></td>
                         </tr>
                       );
                     })}
@@ -919,9 +938,7 @@ export default function Flip7Tracker() {
                   {(() => { const [pre, hi, post] = t.roundTitleParts(rounds.length + 1); return <>{pre}<span>{hi}</span>{post}</>; })()}
                 </div>
                 <div style={{display:'flex',gap:8}}>
-                  {rounds.length > 0 && (
-                    <button className="btn btn-sm" onClick={undoRound}>{t.undo}</button>
-                  )}
+                  {rounds.length > 0 && <button className="btn btn-sm" onClick={undoRound}>{t.undo}</button>}
                   <button className="btn btn-sm" onClick={newGame}>{t.newGame}</button>
                   <button className="btn btn-sm btn-danger" onClick={resetAll}>{t.reset}</button>
                 </div>
@@ -931,59 +948,39 @@ export default function Flip7Tracker() {
                 {players.map(p => {
                   const e = entry[p] || { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false };
                   const preview = getPreview(p);
-                  const numErr = e.bust ? null : validateNumCards(e.cards, t);
+                  const numErr  = e.bust ? null : validateNumCards(e.cards, t);
                   const plusErr = e.bust ? null : validatePlusCards(e.plusCards, t);
                   return (
                     <div key={p} className={`player-entry${e.bust ? " is-bust" : e.flip7 ? " is-flip7" : ""}`}>
                       <div className="player-entry-header">
                         <div className="player-entry-name">{p}</div>
-                        <button className="btn-camera" title="📷"
-                          disabled={e.bust || cameraLoading}
-                          onClick={() => handleCameraClick(p)}>📷</button>
+                        <button className="btn-camera" disabled={e.bust || cameraLoading} onClick={() => handleCameraClick(p)}>📷</button>
                       </div>
 
                       <div className="input-hint">{t.numCardsLabel}</div>
-                      <input
-                        className={`input cards-input${numErr ? " invalid" : ""}`}
-                        placeholder={t.numCardsPlaceholder}
-                        value={e.cards}
-                        disabled={e.bust}
-                        onChange={ev => updateEntry(p, "cards", ev.target.value)}
-                      />
+                      <input className={`input cards-input${numErr ? " invalid" : ""}`}
+                        placeholder={t.numCardsPlaceholder} value={e.cards} disabled={e.bust}
+                        onChange={ev => updateEntry(p, "cards", ev.target.value)} />
                       <div className="input-error">{numErr}</div>
 
                       <div className="input-hint">{t.plusCardsLabel}</div>
-                      <input
-                        className={`input cards-input${plusErr ? " invalid" : ""}`}
-                        placeholder={t.plusCardsPlaceholder}
-                        value={e.plusCards}
-                        disabled={e.bust}
-                        onChange={ev => updateEntry(p, "plusCards", ev.target.value)}
-                      />
+                      <input className={`input cards-input${plusErr ? " invalid" : ""}`}
+                        placeholder={t.plusCardsPlaceholder} value={e.plusCards} disabled={e.bust}
+                        onChange={ev => updateEntry(p, "plusCards", ev.target.value)} />
                       <div className="input-error">{plusErr}</div>
 
                       <div className="toggle-row">
-                        <button
-                          className={`toggle-btn${e.bust ? " active-bust" : ""}`}
-                          onClick={() => toggleBust(p)}
-                        >BUST</button>
-                        <button
-                          className={`toggle-btn${e.flip7 ? " active-flip7" : ""}`}
-                          onClick={() => toggleFlip7(p)}
-                        >FLIP 7 ★</button>
-                        <button
-                          className={`toggle-btn${e.multiplier ? " active-flip7" : ""}`}
-                          style={e.multiplier ? {borderColor:'#4af',color:'#4af',background:'rgba(68,170,255,0.12)'} : {}}
-                          disabled={e.bust}
-                          onClick={() => updateEntry(p, "multiplier", !e.multiplier)}
-                        >×2</button>
+                        <button className={`toggle-btn${e.bust ? " active-bust" : ""}`} onClick={() => toggleBust(p)}>BUST</button>
+                        <button className={`toggle-btn${e.flip7 ? " active-flip7" : ""}`} onClick={() => toggleFlip7(p)}>FLIP 7 ★</button>
+                        <button className={`toggle-btn${e.multiplier ? " active-x2" : ""}`}
+                          disabled={e.bust} onClick={() => updateEntry(p, "multiplier", !e.multiplier)}>×2</button>
                       </div>
 
                       {preview && (
                         <div className={`preview-score${e.bust ? " bust" : ""}`}>
                           {e.bust ? "0" : preview.score}
                           {!e.bust && (e.flip7 || e.multiplier) && (
-                            <span style={{fontSize:11,color:'#778',marginLeft:8,fontFamily:"'DM Mono'"}}>
+                            <span className="preview-detail">
                               {[e.multiplier && "×2", e.flip7 && `+${FLIP7_BONUS}`].filter(Boolean).join(" ")}
                             </span>
                           )}
@@ -1002,29 +999,19 @@ export default function Flip7Tracker() {
                 return (
                   <div className="action-row">
                     <div className="action-add-row">
-                      <input
-                        className="input"
-                        style={{flex:1}}
-                        placeholder={t.newPlayerPlaceholder}
-                        value={newPlayerName}
-                        onChange={e => setNewPlayerName(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && addPlayerInGame()}
-                      />
+                      <input className="input" style={{flex:1}} placeholder={t.newPlayerPlaceholder}
+                        value={newPlayerName} onChange={e => setNewPlayerName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && addPlayerInGame()} />
                       <button className="btn" onClick={addPlayerInGame}>{t.addInGame}</button>
                     </div>
-                    <button
-                      className="btn btn-primary btn-confirm"
-                      onClick={confirmRound}
-                      disabled={hasErrors}
-                      style={hasErrors ? {opacity:0.4, cursor:'not-allowed'} : {}}
-                    >
+                    <button className="btn btn-primary btn-confirm" onClick={confirmRound}
+                      disabled={hasErrors} style={hasErrors ? {opacity:0.4,cursor:'not-allowed'} : {}}>
                       {t.confirmRound}
                     </button>
                   </div>
                 );
               })()}
             </div>
-
           </div>
         )}
       </div>
@@ -1063,22 +1050,16 @@ export default function Flip7Tracker() {
         <div className="dialog-overlay" onClick={() => setApiKeyModal(false)}>
           <div className="dialog-box" onClick={e => e.stopPropagation()}>
             <div className="dialog-msg">
-              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:3,color:'#f5c842',marginBottom:12}}>
-                {t.apiKeyTitle}
-              </div>
-              <div style={{fontSize:11,color:'#556',marginBottom:14}}>{t.apiKeyDesc}</div>
+              <div className="dialog-title">{t.apiKeyTitle}</div>
+              <div className="dialog-desc">{t.apiKeyDesc}</div>
               <input className="input" style={{width:'100%',fontSize:12}}
-                placeholder={t.apiKeyPlaceholder}
-                value={apiKeyDraft}
+                placeholder={t.apiKeyPlaceholder} value={apiKeyDraft}
                 onChange={e => setApiKeyDraft(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && saveApiKey()}
-                autoFocus
-              />
+                onKeyDown={e => e.key === 'Enter' && saveApiKey()} autoFocus />
             </div>
             <div className="dialog-btns">
               <button className="btn" onClick={() => setApiKeyModal(false)}>{t.cancel}</button>
-              <button className="btn btn-primary" onClick={saveApiKey}
-                disabled={!apiKeyDraft.trim()}>{t.save}</button>
+              <button className="btn btn-primary" onClick={saveApiKey} disabled={!apiKeyDraft.trim()}>{t.save}</button>
             </div>
           </div>
         </div>
