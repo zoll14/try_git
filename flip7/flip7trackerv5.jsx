@@ -696,15 +696,14 @@ export default function Flip7Tracker() {
 
   const startGame = () => {
     const pending = playerName.trim();
-    const finalPlayers = pending && !players.includes(pending) ? [...players, pending] : players;
-    if (finalPlayers.length < 2) return;
-    if (pending && !players.includes(pending)) {
-      setPlayers(finalPlayers);
-      setPlayerName("");
-    }
+    const all = (pending && !players.includes(pending)) ? [...players, pending] : [...players];
+    if (all.length < 2) return;
     const init = {};
-    finalPlayers.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
-    setEntry(init); setPhase("game");
+    all.forEach(p => { init[p] = { cards: "", plusCards: "", bust: false, flip7: false, multiplier: false }; });
+    setPlayers(all);
+    setPlayerName("");
+    setEntry(init);
+    setPhase("game");
   };
 
   // ── Round entry ──────────────────────────────────────────────
@@ -807,9 +806,14 @@ export default function Flip7Tracker() {
               <button className="btn" onClick={addPlayer}>{t.addPlayer}</button>
             </div>
             <hr className="divider" />
-            <button className="btn btn-primary" style={{width:'100%',padding:'12px'}}
-              disabled={players.length + (playerName.trim() && !players.includes(playerName.trim()) ? 1 : 0) < 2}
-              onClick={startGame}>{t.startGame}</button>
+            {(() => {
+                const p = playerName.trim();
+                const total = players.length + (p && !players.includes(p) ? 1 : 0);
+                return (
+                  <button type="button" className="btn btn-primary" style={{width:'100%',padding:'12px'}}
+                    disabled={total < 2} onClick={startGame}>{t.startGame}</button>
+                );
+              })()}
           </div>
         )}
 
